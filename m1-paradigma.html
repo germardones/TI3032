@@ -1,0 +1,63 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>El Paradigma NoSQL | Módulo 1 | TI3032</title>
+  <link rel="stylesheet" href="/style.css">
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;800&display=swap" rel="stylesheet">
+</head>
+<body>
+  <div class="glass-background"></div>
+  <main class="container content-wrapper">
+    <div class="nav-header">
+      <a href="/index.html" class="back-link">← Volver al Menú Principal</a>
+      <span class="badge" style="padding: 0.3rem 1rem; border-radius: 50px; background: rgba(123, 66, 255, 0.15); color: #b08dff; font-size: 0.8rem; font-weight: 600; border: 1px solid rgba(123, 66, 255, 0.3);">MÓDULO 01</span>
+    </div>
+    
+    <article class="page-card">
+      <h1>1. El Cambio de Paradigma: SQL vs NoSQL</h1>
+      
+      <p>Durante décadas, las <strong>bases de datos relacionales (SQL)</strong> fueron el estándar inamovible de la industria para persistir información. Su fortaleza radicaba en la normalización: dividir la información en múltiples tablas conectadas mediante llaves foráneas para evitar redundancia y garantizar integridad (ACID).</p>
+      <p>Sin embargo, en el tránsito hacia la web moderna (Web 2.0 y 3.0), el surgimiento del <strong>Big Data, Redes Sociales y el Internet de las Cosas (IoT)</strong> provocó tres problemas arquitectónicos masivos:</p>
+      <ul>
+        <li style="color:var(--text-secondary); margin-left: 20px;"><strong>Volumen:</strong> Cantidades de datos en orden de Petabytes, imposibles de guardar en un solo disco físico.</li>
+        <li style="color:var(--text-secondary); margin-left: 20px;"><strong>Velocidad:</strong> Millones de operaciones de lectura/escritura por segundo (ej. un sensor midiendo telemetría industrial cada milisegundo).</li>
+        <li style="color:var(--text-secondary); margin-left: 20px;"><strong>Variedad:</strong> Datos que no tienen una estructura rígida prefijada (imágenes cruzadas con diccionarios de metadatos variables).</li>
+      </ul>
+      <p style="margin-top:1.5rem">Para resolver esto emergió la arquitectura <strong>NoSQL (Not Only SQL)</strong>. No reemplaza a SQL, pero brinda respuestas distribuidas y dinámicas cuando las tablas rígidas se transforman en un cuello de botella infranqueable.</p>
+
+      <div class="visual-comparison">
+        <div class="comparison-side sql">
+          <h3>Modelo Tradicional Estructurado (SQL)</h3>
+          <ul>
+            <li><strong>Mecanismo de Guardado:</strong> Tablas Rígidas.</li>
+            <li><strong>Esquema:</strong> Schema-On-Write (Se debe crear la tabla y definir tipos de datos rígidos [INT, VARCHAR] antes de insertar).</li>
+            <li><strong>Consultas:</strong> Fuertemente dependiente de sentencias <code>JOIN</code> en memoria para unir datos. Lento para cargas exponenciales.</li>
+            <li><strong>Ejemplos Clásicos:</strong> PostgreSQL, MySQL, Oracle.</li>
+          </ul>
+        </div>
+        
+        <div class="comparison-side nosql">
+          <h3>Modelo Moderno No Estructurado (NoSQL)</h3>
+          <ul>
+            <li><strong>Mecanismo de Guardado:</strong> Documentos JSON, Clave-Valor, Grafos.</li>
+            <li><strong>Esquema:</strong> Schema-On-Read (Esquema Dinámico, el documento guarda lo que le mandes sin validación rígida previa de columnas).</li>
+            <li><strong>Consultas:</strong> Favorece guardar la información junta en vez de desintegrarla, invalidando la necesidad de los lentos JOINs computacionales.</li>
+            <li><strong>Ejemplos Clásicos:</strong> MongoDB, Redis, Cassandra.</li>
+          </ul>
+        </div>
+      </div>
+
+      <div class="page-nav">
+        <span class="nav-btn" style="visibility:hidden"></span>
+        <a href="/m1-cap.html" class="nav-btn next">Siguiente: El Teorema CAP →</a>
+      </div>
+    </article>
+  </main>
+  
+  <footer>
+    <p>© 2026 German Mardones. Todos los derechos reservados.</p>
+  </footer>
+</body>
+</html>

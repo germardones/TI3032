@@ -1,0 +1,63 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Escalabilidad: Scale-Up vs Scale-Out | Módulo 1 | TI3032</title>
+  <link rel="stylesheet" href="/style.css">
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;800&display=swap" rel="stylesheet">
+</head>
+<body>
+  <div class="glass-background"></div>
+  <main class="container content-wrapper">
+    <div class="nav-header">
+      <a href="/index.html" class="back-link">← Volver al Menú Principal</a>
+      <span class="badge" style="padding: 0.3rem 1rem; border-radius: 50px; background: rgba(123, 66, 255, 0.15); color: #b08dff; font-size: 0.8rem; font-weight: 600; border: 1px solid rgba(123, 66, 255, 0.3);">MÓDULO 01</span>
+    </div>
+    
+    <article class="page-card">
+      <h1>3. Escalabilidad Horizontal vs. Vertical</h1>
+      
+      <p>El mayor desafío técnico en Big Data e IoT Industrial no es cómo estructurar los datos, sino <strong>cómo hacer que la base de datos crezca físicamente para soportarlos sin derrumbarse.</strong></p>
+
+      <div class="scale-diagram">
+        <div class="scale-box">
+          <h3 style="color:#ef4444">Scale-Up (Vertical)</h3>
+          <p style="font-size:0.85rem; color:var(--text-secondary); margin-bottom:1rem">Aproximación Relacional Rígida</p>
+          <div class="server-tall">
+            SERVER<br>256GB RAM<br>64 Cores
+          </div>
+          <p style="margin-top:1.5rem; font-size:0.9rem">El crecimiento exige <strong>apagar</strong> la BD, comprar hardware más potente (techo físico inminente) y migrar los datos a un súper servidor más caro. Una falla afecta todo.</p>
+        </div>
+        
+        <div class="scale-box" style="border-color:var(--accent-color); background:rgba(123, 66, 255, 0.05);">
+          <h3 style="color:#34d399">Scale-Out (Horizontal)</h3>
+          <p style="font-size:0.85rem; color:var(--text-secondary); margin-bottom:1rem">Aproximación Distribuida (Sharding)</p>
+          <div class="server-grid">
+            <div class="server-small">Nodo 1</div>
+            <div class="server-small">Nodo 2</div>
+            <div class="server-small">Nodo 3</div>
+            <div class="server-small">Nodo 4</div>
+            <div class="server-small">Nodo 5</div>
+            <div class="server-small" style="border: 1px dashed rgba(255,255,255,0.4); background: transparent; color: rgba(255,255,255,0.4); box-shadow: none;">+ Nodos</div>
+          </div>
+          <p style="margin-top:1.5rem; font-size:0.9rem">El trabajo se fragmenta matemáticamente. Agregar poderío significa solo encender e integrar discos genéricos y de bajo costo ("Nodos") al clúster, escalando infinitamente.</p>
+        </div>
+      </div>
+
+      <h2>El Poder del Sharding</h2>
+      <p>Bases de datos distribuidas como MongoDB o Cassandra utilizan un modelo avanzado llamado <strong>Sharding (Fragmentación)</strong>. Si un clúster maneja una base con 10 billones de lecturas térmicas a nivel global, el motor usa un algoritmo para dividir el total en sub-secciones ("Shards") usando una Shard Key (ej. ID de país), repartiendo el almacenamiento y trabajo de procesador a lo largo de docenas de ordenadores ordinarios simultáneos.</p>
+      <p>Múltiples Nodos balancean la carga milimétricamente. Si necesitas más capacidad para el "Black Friday", apilar 5 computadores baratos conectados rinde mejor que cotizar de urgencia la torre de servidor más costosa de IBM.</p>
+
+      <div class="page-nav">
+        <a href="/m1-cap.html" class="nav-btn">← Tema Anterior</a>
+        <a href="/m1-documentos.html" class="nav-btn next">Siguiente: JSON, BSON y Localidad →</a>
+      </div>
+    </article>
+  </main>
+  
+  <footer>
+    <p>© 2026 German Mardones. Todos los derechos reservados.</p>
+  </footer>
+</body>
+</html>

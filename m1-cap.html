@@ -1,0 +1,69 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>El Teorema CAP | Módulo 1 | TI3032</title>
+  <link rel="stylesheet" href="/style.css">
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;800&display=swap" rel="stylesheet">
+</head>
+<body>
+  <div class="glass-background"></div>
+  <main class="container content-wrapper">
+    <div class="nav-header">
+      <a href="/index.html" class="back-link">← Volver al Menú Principal</a>
+      <span class="badge" style="padding: 0.3rem 1rem; border-radius: 50px; background: rgba(123, 66, 255, 0.15); color: #b08dff; font-size: 0.8rem; font-weight: 600; border: 1px solid rgba(123, 66, 255, 0.3);">MÓDULO 01</span>
+    </div>
+    
+    <article class="page-card">
+      <h1>2. El Teorema CAP (Gobernanza de Sistemas Distribuidos)</h1>
+      
+      <p>El Teorema de Brewer (CAP) es la ley de la física fundamental para bases de datos distribuidas. Establece un principio crudo pero real: <strong>Es físicamente imposible garantizar simultáneamente la tripleta completa de Consistencia, Disponibilidad y Tolerancia al Particionado en un sistema de datos en la red.</strong> Ante un evento de fallo crítico, un Arquitecto de Software debe escoger salvar dos de ellas a expensas de la tercera.</p>
+
+      <div class="cap-diagram">
+        <div class="cap-node" style="border-color:#3b82f6; box-shadow: 0 0 20px rgba(59,130,246,0.2)">
+          C
+          <span style="font-size:0.75rem; font-weight:400; margin-top:5px; color:#9ca3af">Consistencia</span>
+        </div>
+        <div class="cap-connector">
+          <strong>MongoDB (CP)</strong>
+          Garantiza consistencia absoluta e ignora disponiblidad temporal si la red decae, para no corromper datos.
+        </div>
+        <div class="cap-node" style="border-color:#ef4444; box-shadow: 0 0 20px rgba(239,68,68,0.2)">
+          P
+          <span style="font-size:0.75rem; font-weight:400; margin-top:5px; color:#9ca3af">Particionado</span>
+        </div>
+        <div class="cap-connector">
+          <strong>Cassandra (AP)</strong>
+          Mantiene viva la escritura (carrito de compras) aunque la red falle. La consistencia se resolverá "eventualmente".
+        </div>
+        <div class="cap-node" style="border-color:#10b981; box-shadow: 0 0 20px rgba(16,185,129,0.2)">
+          A
+          <span style="font-size:0.75rem; font-weight:400; margin-top:5px; color:#9ca3af">Disponibilidad</span>
+        </div>
+      </div>
+
+      <h2>Desglose de la Tríada</h2>
+      <ul style="color:var(--text-secondary); font-size:1.05rem; padding-left: 20px;">
+        <li style="margin-bottom:1rem"><strong>[C] Consistencia (Consistency):</strong> Cada vez que un usuario hace una operación de lectura interactuando con el clúster, el servidor le devuelve de forma garantizada **el último dato guardado** o simplemente un error limpio. No se toleran datos desactualizados (Stale data).</li>
+        <li style="margin-bottom:1rem"><strong>[A] Disponibilidad (Availability):</strong> Cada petición transaccional que entra a un nodo vivo obtiene una respuesta exitosa, pero **no se garantiza en lo absoluto** que esta lectura contenga la información más reciente insertada en otro nodo de la misma red.</li>
+        <li style="margin-bottom:1rem"><strong>[P] Tolerancia al Particionado (Partition Tolerance):</strong> El clúster y la plataforma web siguen funcionando intactos a pesar de que algunos paquetes de mensajería interna entre nodos se caigan o se corrompan (Partición de Red).</li>
+      </ul>
+
+      <p style="margin-top:2rem; padding:1.5rem; background:rgba(239,68,68,0.05); border-left:4px solid #ef4444; border-radius:0 8px 8px 0;">
+        <strong style="color:#ef4444; display:block; margin-bottom:0.5rem">Regla de Oro en la Nube (Cloud Computing)</strong>
+        En entornos modernos (AWS, Azure), redes aisladas y cables de fibra cortados ocurren todos los días. <strong>La Tolerancia al Particionado (P) NUNCA se puede sacrificar.</strong> Por lo tanto, el verdadero debate arquitectónico en Big Data siempre se reduce a elegir firmemente entre: <strong>¿Consistencia estricta (bancos) o Disponibilidad inmediata (Foros/E-commerce)?</strong>
+      </p>
+
+      <div class="page-nav">
+        <a href="/m1-paradigma.html" class="nav-btn">← Tema Anterior</a>
+        <a href="/m1-escalabilidad.html" class="nav-btn next">Siguiente: Escalabilidad →</a>
+      </div>
+    </article>
+  </main>
+  
+  <footer>
+    <p>© 2026 German Mardones. Todos los derechos reservados.</p>
+  </footer>
+</body>
+</html>

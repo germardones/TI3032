@@ -1,0 +1,64 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Anatomía Documental y BSON | Módulo 1 | TI3032</title>
+  <link rel="stylesheet" href="/style.css">
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;800&display=swap" rel="stylesheet">
+</head>
+<body>
+  <div class="glass-background"></div>
+  <main class="container content-wrapper">
+    <div class="nav-header">
+      <a href="/index.html" class="back-link">← Volver al Menú Principal</a>
+      <span class="badge" style="padding: 0.3rem 1rem; border-radius: 50px; background: rgba(123, 66, 255, 0.15); color: #b08dff; font-size: 0.8rem; font-weight: 600; border: 1px solid rgba(123, 66, 255, 0.3);">MÓDULO 01</span>
+    </div>
+    
+    <article class="page-card">
+      <h1>4. Formatos: Localidad de Datos, JSON y BSON</h1>
+      
+      <p>En el almacenamiento Relacional estricto (SQL), la regla inquebrantable de la arquitectura obligaba a "Normalizar". Cada elemento repetido o foráneo debía abstraerse y dividirse en tablas secundarias.</p> 
+      <p>En el universo de Bases de Datos NoSQL y Documentales, las reglas cambian hacia la asimetría para priorizar inmediatez: <strong>"Los datos que se acceden juntos en la aplicación, deben guardarse juntos estáticamente"</strong>. A esto en Big Data se lo categoriza como <em>Localidad de Datos</em>.</p>
+
+      <div class="visual-comparison" style="grid-template-columns: 1fr; margin-bottom: 3rem;">
+        <div class="comparison-side nosql" style="background: rgba(25, 28, 35, 0.9);">
+          <h3 style="text-align:left">El Subdocumento Anidado (Agregado)</h3>
+<pre><code style="color:#d4d4d4">{</code>
+  <code style="color:#9cdcfe">"usuario"</code>: <code style="color:#ce9178">"aperez"</code>,
+  <code style="color:#9cdcfe">"rol_metadata"</code>: {
+    <code style="color:#9cdcfe">"permiso"</code>: <code style="color:#ce9178">"sudo_admin"</code>,
+    <code style="color:#9cdcfe">"frecuencia_login"</code>: <code style="color:#ce9178">"daily"</code>
+  },
+  <code style="color:#9cdcfe">"dispositivos_registrados"</code>: [
+    { <code style="color:#9cdcfe">"os"</code>: <code style="color:#ce9178">"Android"</code>, <code style="color:#9cdcfe">"activo"</code>: <code style="color:#569cd6">true</code> },
+    { <code style="color:#9cdcfe">"os"</code>: <code style="color:#ce9178">"Win11"</code>, <code style="color:#9cdcfe">"activo"</code>: <code style="color:#569cd6">false</code> }
+  ]
+<code style="color:#d4d4d4">}</code></pre>
+          <p style="text-align:left; font-size:0.9rem; color:var(--text-secondary)">Una sola llamada a disco obteniendo este documento trae todos sus roles en el Subdocumento y su Array de Dispositivos simultáneamente. <strong>Cero <code style="color:#ef4444">JOINs</code></strong> y se elimina la sobrecarga computacional de fusionar 3 tablas para cargar un dashboard web.</p>
+        </div>
+      </div>
+
+      <h2>Bajo el Capó: El paso de JSON al formato Binario (BSON)</h2>
+      <p>Es un error común pensar que un motor como MongoDB almacena e indexa simplemente objetos JSON en disco duro.</p>
+      
+      <p>El formato <strong>JSON (JavaScript Object Notation)</strong> domina la web por ser ilegible universal, pero es limitado: carece de noción pura de longitudes y de tipos de datos maduros (no permite definir binarios de archivos crudos dentro del código ni tiene control hiper-preciso sobre fechas en lugar de strings opacas).</p>
+
+      <p>Por eso el motor toma y codifica permanentemente el texto dictado en JSON convirtiéndolo a <strong>BSON (Binary JSON)</strong>. BSON inyecta nativamente los tipos robustos faltantes (como su famoso e insustituible autogenerador <code>ObjectId</code>) y, de forma crítica, introduce <strong>Prefijos de Longitud Dinámicos y Empaquetado Binario</strong>.</p>
+
+      <ul style="color:var(--text-secondary); padding-left:20px; margin-top:1.5rem; margin-bottom: 2rem; font-size:1.05rem">
+        <li style="margin-bottom:1rem"><strong>Eficiencia en Memoria C: Pointer Jumping (Saltos por Punteros)</strong> <br>Si el indexador interno necesita revisar la llave "estado" al final del documento, el formato BSON le permite consultar el empaquetado inicial que contiene el tamaño exacto del documento saltando los bytes iniciales innecesarios, decodificando exclusivamente lo necesario sin tener que inflar RAM (ni convertir a string) toda la estructura anterior del documento.</li>
+      </ul>
+
+      <div class="page-nav" style="justify-content: flex-start; gap: 1rem;">
+        <a href="/m1-escalabilidad.html" class="nav-btn">← Tema Anterior</a>
+        <a href="/index.html" class="nav-btn next" style="margin-left:auto">Finalizar Módulo 01 →</a>
+      </div>
+    </article>
+  </main>
+  
+  <footer>
+    <p>© 2026 German Mardones. Todos los derechos reservados.</p>
+  </footer>
+</body>
+</html>

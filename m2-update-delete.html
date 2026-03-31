@@ -1,0 +1,56 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Actualización y Borrado | Módulo 2 | TI3032</title>
+  <link rel="stylesheet" href="/style.css">
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;800&display=swap" rel="stylesheet">
+</head>
+<body>
+  <div class="glass-background"></div>
+  <main class="container content-wrapper">
+    <div class="nav-header">
+      <a href="/index.html" class="back-link">← Volver al Menú Principal</a>
+      <span class="badge" style="padding: 0.3rem 1rem; border-radius: 50px; background: rgba(52, 211, 153, 0.15); color: #34d399; font-size: 0.8rem; font-weight: 600; border: 1px solid rgba(52, 211, 153, 0.3);">MÓDULO 02</span>
+    </div>
+    
+    <article class="page-card">
+      <h1>4. Estructuras Avanzadas: Update y Delete</h1>
+      
+      <p>Modificar y eliminar datos son operaciones potencialmente destructivas de alto nivel. En MongoDB, al igual que SQL con su clausula algorítmica <code>WHERE</code>, la clave de no destruir la base entera reside en dominar de antemano el Filtro Inicial.</p>
+
+      <h2>Actualización: <code>updateOne()</code> y <code>updateMany()</code></h2>
+      <p>A diferencia de Insertion, los comandos Update son agresivos y reciben <strong>siempre DOS objetos en secuencia</strong>, separados por una coma en el Core de la función:</p>
+      <ul style="color:var(--text-secondary); padding-left:20px; font-size:1.05rem; margin-bottom:1.5rem">
+        <li><strong>Objeto JSON 1 (El Scope/Filtro):</strong> "¿A qué documentos/coordinadas atrapamos?"</li>
+        <li><strong>Objeto JSON 2 (La Mutación):</strong> "¿Qué bloque de datos nuevo aplicamos sobrescribiendo?"</li>
+      </ul>
+
+      <p>Si la empresa desea promover a "Marta" como usuario premium, la orden requiere empalmar un operador atómico y táctico: el <strong><code>$set</code></strong>. 
+      <br><em style="color:#ef4444">Advertencia:</em> Sin el operador <code>$set</code> inyectado en el paso 2, MongoDB borraría todos los atributos previos de Marta limpiando su Documento y colocando puramente el string nuevo.</p>
+
+<pre><code style="color:#d4d4d4">> </code><code style="color:#569cd6">db</code>.<code style="color:#9cdcfe">clientes</code>.<code style="color:#dcdcaa">updateOne</code>(
+  { <code style="color:#9cdcfe">nombre</code>: <code style="color:#ce9178">"Marta"</code> },             <code style="color:#6a9955">// JSON 1: Filtro atrapador. Encuentra a Marta.</code>
+  { <code style="color:#9cdcfe">$set</code>: { <code style="color:#9cdcfe">premium</code>: <code style="color:#569cd6">true</code> } }    <code style="color:#6a9955">// JSON 2: Mutación parcial atómica por $set</code>
+)</pre>
+
+      <h2 style="margin-top:2.5rem">Borrado: <code>deleteOne()</code> y <code>deleteMany()</code></h2>
+      <p>La desvinculación es rápida pues no requiere Mutación y se ejecuta solo pasando el JSON Scope Filtro original. Un error mal enfocado equivale matemáticamente al temido <code>DELETE FROM tabla</code> sin el WHERE estricto.</p>
+      
+      <div class="visual-comparison" style="grid-template-columns: 1fr; margin-bottom: 2rem;">
+        <div class="comparison-side" style="background:rgba(239, 68, 68, 0.1); border-top: 4px solid #ef4444;">
+          <h3 style="color:#ef4444; text-align:left;">Precaución Absoluta en Cascada</h3>
+<pre style="background:rgba(0,0,0,0.5); border-color:#ef4444;"><code style="color:#d4d4d4">> </code><code style="color:#569cd6">db</code>.<code style="color:#9cdcfe">clientes</code>.<code style="color:#dcdcaa">deleteOne</code>( { <code style="color:#9cdcfe">_id</code>: <code style="color:#dcdcaa">ObjectId</code>(<code style="color:#ce9178">"64eb98f3b..."</code>) } )</pre>
+          <p style="text-align:left; font-size:0.9rem; color:var(--text-secondary)">Mejores Prácticas: En entornos en Producción se restringe el borrado en masa y siempre se destruye apuntando vectorialmente mediante la **Primary Key Pura** (`_id`) generada por BSON en vez de texto plano como el nombre. Ejecutar un <code>deleteMany({ edad: { $gt: 50 } })</code> destruiría masivamente y sin reversión a una cuota poblacional completa.</p>
+        </div>
+      </div>
+
+      <div class="page-nav" style="justify-content: flex-start; gap: 1rem;">
+        <a href="/m2-find.html" class="nav-btn">← Tema Anterior</a>
+        <a href="/index.html" class="nav-btn next" style="margin-left:auto; background: #34d399;">Concluir Módulo 02 →</a>
+      </div>
+    </article>
+  </main>
+</body>
+</html>

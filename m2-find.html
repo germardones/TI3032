@@ -1,0 +1,79 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Lecturas y Filtros | Módulo 2 | TI3032</title>
+  <link rel="stylesheet" href="/style.css">
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;800&display=swap" rel="stylesheet">
+</head>
+<body>
+  <div class="glass-background"></div>
+  <main class="container content-wrapper">
+    <div class="nav-header">
+      <a href="/index.html" class="back-link">← Volver al Menú Principal</a>
+      <span class="badge" style="padding: 0.3rem 1rem; border-radius: 50px; background: rgba(52, 211, 153, 0.15); color: #34d399; font-size: 0.8rem; font-weight: 600; border: 1px solid rgba(52, 211, 153, 0.3);">MÓDULO 02</span>
+    </div>
+    
+    <article class="page-card">
+      <h1>3. Extrayendo Datos: Read (R)</h1>
+      
+      <p>La lectura es la base de todo Dashboard y sistema analítico. En vez del inmenso bloque de texto plano de <code>SELECT * FROM tabla WHERE ...</code>, MongoDB utiliza un objeto JSON en JavaScript puro que actúa como un "molde" conceptual para atrapar la información deseada usando la función universal <code>find()</code>.</p>
+
+      <h2>Listar Todo: <code>find()</code> Vacío</h2>
+      <p>El argumento de <code>find()</code> es el Filtro JSON. Si pasas un objeto literal vacío <code>{}</code>, recuperas el 100% absoluto de la colección.</p>
+<pre><code style="color:#d4d4d4">> </code><code style="color:#569cd6">db</code>.<code style="color:#9cdcfe">clientes</code>.<code style="color:#dcdcaa">find</code>( {} )   <code style="color:#6a9955">// Muestra todo el volumen almacenado </code></pre>
+
+      <h2 style="margin-top:2rem;">Filtros de Igualdad Estricta</h2>
+      <p>Si buscas una coincidencia 1 a 1, solo inyecta los atributos que quieres forzar como llave y valor.</p>
+      
+      <div class="visual-comparison" style="margin:2rem 0">
+        <div class="comparison-side sql" style="border-top-color:#34d399">
+          <p style="color:#a0a8b5; margin-bottom: 0.5rem">En mentalidad SQL:</p>
+          <code style="color:#fff; font-size:1.1rem">SELECT * FROM clientes <br>WHERE nombre = 'Marta';</code>
+        </div>
+        <div class="comparison-side nosql" style="border-top-color:#7b42ff; background: rgba(123, 66, 255, 0.05);">
+          <p style="color:#a0a8b5; margin-bottom: 0.5rem">En Sintaxis MongoDB:</p>
+          <code style="color:#fff; font-size:1.1rem">db.clientes.find({ <br>&nbsp;&nbsp;nombre: "Marta"<br>})</code>
+        </div>
+      </div>
+
+      <h2>Uso de Operadores: Lógica con Dólares <code>$</code></h2>
+      <p>Cuando quieres filtrar por algo que NO es textual o exactamente igual (ej: mayores a 30, distintos de nulo), debes insertar un <strong>Operador Lógico Nativo</strong> que en MongoDB empieza obligatoriamente con el símbolo <code>$</code>.</p>
+      <p>La anatomía del objeto JSON cambia ligeramente anidando el operador: <br><code>{ atributo: { $operador: valor_a_evaluar } }</code></p>
+
+      <table style="width: 100%; border-collapse: collapse; margin: 2rem 0; background: rgba(0,0,0,0.2); border-radius: 8px;">
+        <thead style="background: rgba(52, 211, 153, 0.1); color: #fff;">
+          <tr>
+            <th style="padding:1rem">Operador</th>
+            <th style="padding:1rem">Acrónimo Inglés</th>
+            <th style="padding:1rem">Código de Búsqueda de Ejemplo</th>
+          </tr>
+        </thead>
+        <tbody style="color:#a0a8b5; font-size:0.95rem">
+          <tr>
+            <td style="padding:1rem; border-bottom:1px solid rgba(255,255,255,0.05)"><code style="color:#fff">$eq</code> / <code style="color:#fff">$ne</code></td>
+            <td style="padding:1rem; border-bottom:1px solid rgba(255,255,255,0.05)">EQual / Not Equal</td>
+            <td style="padding:1rem; border-bottom:1px solid rgba(255,255,255,0.05)"><code>{ edad: { $ne: 30 } }</code><br>(Filtra Usuarios que NO tengan 30 años)</td>
+          </tr>
+          <tr>
+            <td style="padding:1rem; border-bottom:1px solid rgba(255,255,255,0.05)"><code style="color:#fff">$gt</code> / <code style="color:#fff">$gte</code></td>
+            <td style="padding:1rem; border-bottom:1px solid rgba(255,255,255,0.05)">Greater Than (Equal)</td>
+            <td style="padding:1rem; border-bottom:1px solid rgba(255,255,255,0.05)"><code>{ edad: { $gte: 18 } }</code><br>(Filtra Mayores o iguales a 18 años)</td>
+          </tr>
+          <tr>
+            <td style="padding:1rem"><code style="color:#fff">$lt</code> / <code style="color:#fff">$lte</code></td>
+            <td style="padding:1rem">Less Than (Equal)</td>
+            <td style="padding:1rem"><code>{ precio: { $lt: 500 } }</code><br>(Filtra Productos menores a $500 puros)</td>
+          </tr>
+        </tbody>
+      </table>
+
+      <div class="page-nav">
+        <a href="/m2-insert.html" class="nav-btn">← Tema Anterior</a>
+        <a href="/m2-update-delete.html" class="nav-btn next" style="background:#34d399">Siguiente: Modificar y Borrar →</a>
+      </div>
+    </article>
+  </main>
+</body>
+</html>

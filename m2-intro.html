@@ -1,0 +1,60 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Introducción a Colecciones | Módulo 2 | TI3032</title>
+  <link rel="stylesheet" href="/style.css">
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;800&display=swap" rel="stylesheet">
+</head>
+<body>
+  <div class="glass-background"></div>
+  <main class="container content-wrapper">
+    <div class="nav-header">
+      <a href="/index.html" class="back-link">← Volver al Menú Principal</a>
+      <span class="badge" style="padding: 0.3rem 1rem; border-radius: 50px; background: rgba(52, 211, 153, 0.15); color: #34d399; font-size: 0.8rem; font-weight: 600; border: 1px solid rgba(52, 211, 153, 0.3);">MÓDULO 02</span>
+    </div>
+    
+    <article class="page-card">
+      <h1>1. Conceptos Base: El Ecosistema de MongoDB</h1>
+      
+      <p>Antes de escribir consultas, debemos entender en qué jerarquía estamos operando. En MongoDB, los datos se almacenan siguiendo una estructura de tres niveles lógicos descendentes.</p>
+      
+      <div class="scale-diagram" style="margin-top: 2rem;">
+        <div class="scale-box" style="background:rgba(123, 66, 255, 0.05); border-color:var(--accent-color);">
+          <h3 style="color:#b08dff">1. Database (Base de Datos)</h3>
+          <p style="font-size:0.9rem">Instancia mayor. Al igual que en SQL, separa lógicamente universos de negocio enteros (ej: "GlobalMarketDB", "RRHH").</p>
+        </div>
+        <div class="scale-box" style="background:rgba(52, 211, 153, 0.05); border-color:#34d399;">
+          <h3 style="color:#34d399">2. Colección</h3>
+          <p style="font-size:0.9rem">Equivalente directo a una <em>Tabla</em> en SQL. Agrupa un conjunto masivo de Documentos de un dominio semántico. (Ej: Colección <code>Usuarios</code>).</p>
+        </div>
+        <div class="scale-box" style="background:rgba(239, 68, 68, 0.05); border-color:#ef4444;">
+          <h3 style="color:#ef4444">3. Documento</h3>
+          <p style="font-size:0.9rem">El equivalente a un <em>Registro</em> o <em>Fila</em> de DB. Es el bloque JSON físico definitivo que incrusta toda la información procesada.</p>
+        </div>
+      </div>
+
+      <h2 style="margin-top: 3.5rem">Anatomía de un Comando en MongoDB Shell (Mongosh)</h2>
+      <p>Cuando te conectas vía nube o consola local a MongoDB, envías comandos en formato de interfaz Javascript de objetos (C-Level). La estructura base y vital de la sintaxis obedece a un flujo estricto:</p>
+      
+      <pre style="text-align:center; font-size:1.2rem; padding: 2.5rem; border-color:rgba(52, 211, 153, 0.3);">
+<code style="color:#569cd6">db</code>.<code style="color:#9cdcfe">nombre_coleccion</code>.<code style="color:#dcdcaa">comando_accion</code>( <code style="color:#ce9178">{ ...argumentos }</code> )
+      </pre>
+
+      <ul style="color:var(--text-secondary); padding-left:20px; font-size:1.05rem">
+        <li style="margin-bottom:0.8rem"><strong style="color:#fff">1. <code>db</code> (Contexto):</strong>  Le indica imperativamente al motor "aplica la orden a la Base de Datos que estoy usando activamente".</li>
+        <li style="margin-bottom:0.8rem"><strong style="color:#fff">2. <code>nombre_coleccion</code> (Target):</strong>  Apunta al modelo de grupo al que nos dirigimos  (Ej: <code>db.comentarios...</code>).</li>
+        <li style="margin-bottom:0.8rem"><strong style="color:#fff">3. <code>comando_accion()</code> (El Filtro CRUD):</strong>  La inyección de método (Ej: <code>insertOne()</code>, <code>find()</code>, <code>deleteOne()</code>).</li>
+      </ul>
+
+      <p style="margin-top:2rem; background:rgba(255,255,255,0.05); padding:1.5rem; border-radius: 8px;"><strong>El Comienzo Absoluto:</strong> Previo a escribir ningún comando a <code>db</code>, en tu Shell debes instruir la orden textual <code>use nombre_de_mi_db</code> para conectarte lógicamente a ese entorno de trabajo.</p>
+
+      <div class="page-nav">
+        <a href="/index.html" class="nav-btn">← Volver</a>
+        <a href="/m2-insert.html" class="nav-btn next" style="background:#34d399">Siguiente: Crear Datos (Insert) →</a>
+      </div>
+    </article>
+  </main>
+</body>
+</html>

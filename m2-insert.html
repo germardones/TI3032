@@ -1,0 +1,60 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Creación de Datos (CRUD) | Módulo 2 | TI3032</title>
+  <link rel="stylesheet" href="/style.css">
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;800&display=swap" rel="stylesheet">
+</head>
+<body>
+  <div class="glass-background"></div>
+  <main class="container content-wrapper">
+    <div class="nav-header">
+      <a href="/index.html" class="back-link">← Volver al Menú Principal</a>
+      <span class="badge" style="padding: 0.3rem 1rem; border-radius: 50px; background: rgba(52, 211, 153, 0.15); color: #34d399; font-size: 0.8rem; font-weight: 600; border: 1px solid rgba(52, 211, 153, 0.3);">MÓDULO 02</span>
+    </div>
+    
+    <article class="page-card">
+      <h1>2. Inserción de Datos: Create (C)</h1>
+      
+      <p>Las bases de datos avanzadas Documentales tienen características <strong>Schema-less (esquema dinámico al leer, sin esquema estricto de pre-escritura)</strong>. ¿Qué significa esto a nivel de comandos? Que si corres con éxito una inserción apuntando directamente hacia una Colección que no existe en tu estructura previamente, MongoDB la inferirá y creará dinámicamente en medio de la operación de escritura por ti.</p>
+
+      <h2>Comando: <code>insertOne()</code></h2>
+      <p>Se utiliza mandatoriamente en arquitectura para forzar la inyección de exactamente un documento monolítico a la vez. Consume vía argumento directamente la semántica de la interfaz JSON de tu Backend.</p>
+      
+      <div class="visual-comparison" style="grid-template-columns: 1fr;">
+        <div class="comparison-side nosql" style="background: rgba(25, 28, 35, 0.9);">
+<pre><code style="color:#d4d4d4">> </code><code style="color:#569cd6">db</code>.<code style="color:#9cdcfe">clientes</code>.<code style="color:#dcdcaa">insertOne</code>({
+  <code style="color:#9cdcfe">nombre</code>: <code style="color:#ce9178">"Marta"</code>,
+  <code style="color:#9cdcfe">edad</code>: <code style="color:#b5cea8">35</code>,
+  <code style="color:#9cdcfe">premium</code>: <code style="color:#569cd6">true</code>
+})</pre>
+          <p style="color:#34d399; margin-top:1rem">Aviso y Confirmación Terminal del Motor (Output):</p>
+<pre style="background:rgba(0,0,0,0.5); border-color:#34d399; margin-top:0.5rem"><code>{
+  "acknowledged" : true,
+  "insertedId" : ObjectId("64eb98f3b2a24c153ab2c418")
+}</code></pre>
+        </div>
+      </div>
+      
+      <p style="margin-top:2rem">Fíjate que en tu JSON entrante <strong>nunca le parametrizaste o inyectaste ninguna Primary Key tipo ID</strong> manual. El factor de alta ventaja distribuida en MongoDB es que los algoritmos de BSON calculan criptográficamente identificadores de clúster garantizados internacionalmente a prueba de colisión por IP/Fecha denominados (<strong><code style="color:#34d399">ObjectId</code></strong>). Como desarrollador solo envías estrictamente la data útil.</p>
+
+      <h2 style="margin-top:3rem">Comando: <code>insertMany()</code></h2>
+      <p>Cuando la arquitectura te pide que ingestas reportes, datos en ráfaga o inventarios masivamente (ej. importar 10,000 líneas CSV al vuelo), el modo óptimo siempre es agrupar para matar la latencia de red contra el servidor. Usas <code>insertMany()</code> pasándole por argumento base un componente envolvente <strong>Array Literal Múltiple de objetos <code>[ { ... }, { ... } ]</code></strong>.</p>
+      
+<pre><code style="color:#d4d4d4">> </code><code style="color:#569cd6">db</code>.<code style="color:#9cdcfe">productos</code>.<code style="color:#dcdcaa">insertMany</code>([
+  { <code style="color:#9cdcfe">nombre</code>: <code style="color:#ce9178">"Laptop Thinkpad"</code>, <code style="color:#9cdcfe">precio</code>: <code style="color:#b5cea8">990</code> },
+  { <code style="color:#9cdcfe">nombre</code>: <code style="color:#ce9178">"Mouse Logitech"</code>, <code style="color:#9cdcfe">wireless</code>: <code style="color:#569cd6">true</code> },
+  { <code style="color:#9cdcfe">nombre</code>: <code style="color:#ce9178">"Bolso"</code>, <code style="color:#9cdcfe">material</code>: <code style="color:#ce9178">"Tela"</code>}
+])</pre>
+      <p style="font-size:0.9rem; color:var(--text-secondary)">*Nota el polimorfismo dinámico NoSQL: el Mouse detalla un campo booleano 'wireless' que no se define en absoluto en la Laptop que pide 'precio'. A MongoDB no le genera ningún quiebre en su validación estructural y consolida e indexa los tres nodos exitosamente juntos.*</p>
+
+      <div class="page-nav">
+        <a href="/m2-intro.html" class="nav-btn">← Tema Anterior</a>
+        <a href="/m2-find.html" class="nav-btn next" style="background:#34d399">Siguiente: Lectura (Find) →</a>
+      </div>
+    </article>
+  </main>
+</body>
+</html>

@@ -33,7 +33,14 @@
 <pre><code style="color:#d4d4d4">> </code><code style="color:#569cd6">db</code>.<code style="color:#9cdcfe">clientes</code>.<code style="color:#dcdcaa">updateOne</code>(
   { <code style="color:#9cdcfe">nombre</code>: <code style="color:#ce9178">"Marta"</code> },             <code style="color:#6a9955">// JSON 1: Filtro atrapador. Encuentra a Marta.</code>
   { <code style="color:#9cdcfe">$set</code>: { <code style="color:#9cdcfe">premium</code>: <code style="color:#569cd6">true</code> } }    <code style="color:#6a9955">// JSON 2: Mutación parcial atómica por $set</code>
-)</pre>
+)</code></pre>
+
+      <h3 style="margin-top:2rem; font-size:1.3rem; color:#fff;">Mutando Arreglos: El operador <code>$pull</code></h3>
+      <p>Cuando los documentos tienen propiedades que guardan listas o arreglos (arrays), podemos extraer un elemento específico sin necesidad de reemplazar toda la lista. El operador <strong><code>$pull</code></strong> busca y arranca un valor definido del arreglo automáticamente.</p>
+<pre><code style="color:#d4d4d4">> </code><code style="color:#569cd6">db</code>.<code style="color:#9cdcfe">clientes</code>.<code style="color:#dcdcaa">updateOne</code>(
+  { <code style="color:#9cdcfe">nombre</code>: <code style="color:#ce9178">"Marta"</code> },                    <code style="color:#6a9955">// JSON 1: Filtro atrapador</code>
+  { <code style="color:#9cdcfe">$pull</code>: { <code style="color:#9cdcfe">suscripciones</code>: <code style="color:#ce9178">"basico"</code> } }  <code style="color:#6a9955">// JSON 2: Extrae "basico" del arreglo</code>
+)</code></pre>
 
       <h2 style="margin-top:2.5rem">Borrado: <code>deleteOne()</code> y <code>deleteMany()</code></h2>
       <p>La desvinculación es rápida pues no requiere Mutación y se ejecuta solo pasando el JSON Scope Filtro original. Un error mal enfocado equivale matemáticamente al temido <code>DELETE FROM tabla</code> sin el WHERE estricto.</p>

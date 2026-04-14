@@ -7,18 +7,21 @@
   <link rel="stylesheet" href="/style.css">
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;800&display=swap" rel="stylesheet">
 </head>
-<body>
+<body data-theme="light">
   <div class="glass-background"></div>
   <main class="container content-wrapper">
     <div class="nav-header">
       <a href="/index.html" class="back-link">← Volver al Menú Principal</a>
-      <span class="badge" style="padding: 0.3rem 1rem; border-radius: 50px; background: rgba(245, 158, 11, 0.15); color: #f59e0b; font-size: 0.8rem; font-weight: 600; border: 1px solid rgba(245, 158, 11, 0.3);">MÓDULO 03</span>
+      <div style="display: flex; gap: 1rem; align-items: center;">
+        <button onclick="toggleTheme()" class="nav-btn" style="padding: 0.3rem 0.8rem; font-size: 1.2rem; background: transparent; border: 1px solid var(--card-border); cursor: pointer; border-radius: 50px; color: var(--text-primary); display: flex; align-items: center; justify-content: center; width: 38px; height: 38px; transition: all 0.3s;" aria-label="Cambiar tema">🌓</button>
+        <span class="badge" style="padding: 0.3rem 1rem; border-radius: 50px; background: rgba(245, 158, 11, 0.15); color: #f59e0b; font-size: 0.8rem; font-weight: 600; border: 1px solid rgba(245, 158, 11, 0.3); margin-bottom: 0;">MÓDULO 03</span>
+      </div>
     </div>
 
     <article class="page-card">
       <h1>2. Creación y Eliminación de Bases de Datos y Colecciones</h1>
 
-      <p>Una de las diferencias más radicales de MongoDB respecto a los RDBMS es su modelo de <strong>creación implícita diferida</strong>: ni las bases de datos ni las colecciones se crean con sentencias DDL explícitas como <code>CREATE DATABASE</code> o <code>CREATE TABLE</code>. MongoDB las instancia en memoria y las persiste en disco en el momento en que recibe el primer documento. Este enfoque prioriza la agilidad en el desarrollo sobre la rigidez estructural.</p>
+      <p>Una de las diferencias más radicales de MongoDB respecto a los RDBMS es su modelo de <strong class="tech-tooltip" data-tooltip="MongoDB posterga la creación real en espacio de disco de la BD o colección hasta que se inserte el primer documento.">creación implícita diferida</strong>: ni las bases de datos ni las colecciones se crean con sentencias DDL explícitas como <code>CREATE DATABASE</code> o <code>CREATE TABLE</code>. MongoDB las instancia en memoria y las persiste en disco en el momento en que recibe el primer documento. Este enfoque prioriza la agilidad en el desarrollo sobre la rigidez estructural.</p>
 
       <h2>El Comando <code>use</code> — Selección y Creación Implícita</h2>
       <p>El comando <code>use &lt;nombre&gt;</code> apunta el contexto del shell hacia una base de datos específica. Si la base de datos <strong>no existe todavía</strong>, MongoDB la reserva en memoria pero <em>no la escribe a disco</em> hasta que se inserte el primer documento en alguna de sus colecciones.</p>
@@ -42,7 +45,7 @@
         </div>
       </div>
 
-      <p style="background: rgba(245,158,11,0.1); padding: 1.5rem; border-radius: 8px; border-left: 4px solid #f59e0b;"><strong>Comportamiento clave:</strong> <code>show dbs</code> solo lista bases de datos que contienen al menos una colección con al menos un documento. Una DB vacía existe únicamente en el contexto del shell. Este es un mecanismo de <em>lazy evaluation</em> a nivel de sistema de archivos.</p>
+      <p style="background: rgba(245,158,11,0.1); padding: 1.5rem; border-radius: 8px; border-left: 4px solid #f59e0b;"><strong>Comportamiento clave:</strong> <code>show dbs</code> solo lista bases de datos que contienen al menos una colección con al menos un documento. Una DB vacía existe únicamente en el contexto del shell. Este es un mecanismo de <em class="tech-tooltip" data-tooltip="Estrategia que retrasa la evaluación de una expresión o reserva de disco hasta que su valor sea requerido estrictamente por el sistema.">lazy evaluation</em> a nivel de sistema de archivos.</p>
 
       <h2>Creación de Colecciones — Implícita y Explícita</h2>
       <p>Las colecciones también se crean automáticamente al insertar el primer documento. Sin embargo, el comando <code>db.createCollection()</code> permite crearlas con opciones avanzadas de configuración antes de insertar datos.</p>
@@ -80,7 +83,7 @@
         </div>
       </div>
 
-      <h2>Colecciones Limitadas (<em>Capped Collections</em>)</h2>
+      <h2>Colecciones Limitadas (<em class="tech-tooltip" data-tooltip="Colecciones de tamaño predefinido en bytes. Si se llenan, sobrescriben los documentos más viejos de forma circular.">Capped Collections</em>)</h2>
       <p>Un tipo especial de colección con <strong>tamaño fijo en bytes y orden de inserción garantizado</strong>. Cuando alcanza el límite, sobreescribe automáticamente los documentos más antiguos (como un buffer circular). Son ideales para logs, colas de eventos y streams de datos en tiempo real.</p>
 
 <pre><code style="color:#6a9955"># Crear colección capped de máximo 5 MB y 1000 documentos</code>
@@ -112,7 +115,7 @@
 <code style="color:#d4d4d4">db.productos.countDocuments()</code></pre>
 
       <h2>Eliminación de Colecciones — <code>drop()</code></h2>
-      <p>El método <code>drop()</code> elimina permanentemente una colección: <strong>todos sus documentos, índices y configuración de validación</strong>. La operación es atómica e irreversible sin un backup previo.</p>
+      <p>El método <code>drop()</code> elimina permanentemente una colección: <strong>todos sus documentos, índices y configuración de validación</strong>. La operación es <span class="tech-tooltip" data-tooltip="Unidad indivisible de trabajo; se completa totalmente o falla sin dejar estados intermedios.">atómica</span> e irreversible sin un backup previo.</p>
 
       <div class="visual-comparison" style="grid-template-columns: 1fr;">
         <div class="comparison-side" style="background: rgba(239,68,68,0.08); border-top: 4px solid #ef4444;">
@@ -146,5 +149,26 @@
   <footer>
     <p>© 2026 German Mardones. Todos los derechos reservados.</p>
   </footer>
+
+  <script>
+    function toggleTheme() {
+      const body = document.body;
+      const currentTheme = body.getAttribute('data-theme') || 'dark';
+      const newTheme = currentTheme === 'light' ? 'dark' : 'light';
+      if (newTheme === 'dark') {
+          body.removeAttribute('data-theme');
+      } else {
+          body.setAttribute('data-theme', 'light');
+      }
+      localStorage.setItem('theme', newTheme);
+    }
+    
+    const savedTheme = localStorage.getItem('theme');
+    if (savedTheme === 'dark') {
+      document.body.removeAttribute('data-theme');
+    } else if (savedTheme === 'light') {
+      document.body.setAttribute('data-theme', 'light');
+    }
+  </script>
 </body>
 </html>

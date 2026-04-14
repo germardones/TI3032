@@ -18,7 +18,7 @@
     <article class="page-card">
       <h1>3. Asociaciones Lógicas: Subdocumentos y Arreglos</h1>
 
-      <p>En SQL las relaciones entre entidades se implementan mediante <strong>claves foráneas (FOREIGN KEY)</strong> y <strong>JOINs</strong> en tiempo de consulta. MongoDB adopta una filosofía distinta: en lugar de normalizar los datos en múltiples tablas separadas, permite <strong>incrustar directamente documentos relacionados dentro de un documento padre</strong>. A esta técnica se le llama <em>embedding</em> o subdocumentos. Comprender cuándo aplicar cada estrategia es uno de los skills de diseño más críticos en NoSQL.</p>
+      <p>En SQL las relaciones entre entidades se implementan mediante <strong>claves foráneas (FOREIGN KEY)</strong> y <strong>JOINs</strong> en tiempo de consulta. MongoDB adopta una filosofía distinta: permite <strong>incrustar documentos relacionados directamente dentro de un documento padre</strong>. A esta técnica se le llama <em>embedding</em> o subdocumentos. Comprender cuándo aplicar cada estrategia es uno de los skills de diseño más críticos en NoSQL.</p>
 
       <h2>Las Dos Estrategias Fundamentales</h2>
 
@@ -26,7 +26,7 @@
         <div class="comparison-side sql">
           <h3>Estrategia 1: Embebido (Embedding)</h3>
           <ul>
-            <li>El documento relacionado vive <strong>dentro</strong> del documento padre como un objeto anidado o un elemento de un arreglo.</li>
+            <li>El documento relacionado vive <strong>dentro</strong> del padre como objeto anidado o elemento de un arreglo.</li>
             <li>Una sola operación <code>find()</code> trae todo el árbol de datos: no hay JOIN.</li>
             <li>Óptimo cuando los datos relacionados se leen juntos casi siempre.</li>
             <li>El documento hijo no tiene identidad propia en el sistema.</li>
@@ -35,8 +35,8 @@
         <div class="comparison-side nosql">
           <h3>Estrategia 2: Referenciado (Referencing)</h3>
           <ul>
-            <li>El documento hijo vive en su propia colección. El padre guarda solo el <code>_id</code> del hijo como referencia manual.</li>
-            <li>Se requieren múltiples queries (o <code>$lookup</code> en aggregation) para unir los datos.</li>
+            <li>El hijo vive en su propia colección. El padre guarda solo el <code>_id</code> del hijo como referencia manual.</li>
+            <li>Se requieren múltiples queries para unir los datos.</li>
             <li>Óptimo para entidades independientes, alta cardinalidad o datos actualizados frecuentemente de forma autónoma.</li>
             <li>El documento hijo tiene identidad y ciclo de vida propios.</li>
           </ul>
@@ -44,31 +44,31 @@
       </div>
 
       <h2>Patrón 1:1 — Subdocumento Embebido</h2>
-      <p>Cuando una entidad tiene una relación de <strong>uno a uno</strong> con otra (por ejemplo, un usuario y su perfil extendido) y siempre se acceden juntos, el embedding es la elección correcta. El resultado es una sola lectura de disco para obtener todos los datos.</p>
+      <p>Cuando una entidad tiene una relación de <strong>uno a uno</strong> con otra (por ejemplo, un usuario y su dirección) y siempre se acceden juntos, el embedding es la elección correcta. El resultado es una sola lectura de disco para obtener todos los datos.</p>
 
       <div class="visual-comparison" style="grid-template-columns: 1fr;">
         <div class="comparison-side nosql" style="background: rgba(25, 28, 35, 0.9);">
           <p style="color: #f59e0b; margin-bottom: 1rem; font-weight: 600;">Colección: usuarios — Dirección embebida (1:1)</p>
 <pre><code style="color:#d4d4d4">db.usuarios.insertOne({
   _id:    ObjectId("507f1f77bcf86cd799439011"),
-  nombre: <code style="color:#ce9178">"Valentina Ríos"</code>,
-  email:  <code style="color:#ce9178">"vrios@example.com"</code>,
-
-  <code style="color:#6a9955">// Subdocumento embebido — no es una colección separada</code>
-  direccion: {
-    calle:   <code style="color:#ce9178">"Av. Providencia 1234"</code>,
-    ciudad:  <code style="color:#ce9178">"Santiago"</code>,
-    region:  <code style="color:#ce9178">"Metropolitana"</code>,
-    codigo_postal: <code style="color:#ce9178">"7500000"</code>
+  nombre: "Valentina Ríos",
+  email:  "vrios@example.com",
+</code>
+<code style="color:#6a9955">  // Subdocumento embebido — no es una colección separada</code>
+<code style="color:#d4d4d4">  direccion: {
+    calle:         "Av. Providencia 1234",
+    ciudad:        "Santiago",
+    region:        "Metropolitana",
+    codigo_postal: "7500000"
   }
 })</code></pre>
         </div>
       </div>
 
-      <p>La <code>direccion</code> no es una referencia a otro documento: es un <strong>objeto JSON anidado incrustado directamente en la estructura del usuario</strong>. Cuando MongoDB lee este documento con un solo <code>find()</code>, la dirección viene incluida sin costo adicional de red ni de CPU para ejecutar un JOIN.</p>
+      <p>La <code>direccion</code> no es una referencia: es un <strong>objeto JSON anidado incrustado directamente</strong>. Cuando MongoDB lee este documento con un solo <code>find()</code>, la dirección viene incluida sin costo adicional de red ni de CPU para ejecutar un JOIN.</p>
 
       <h2>Patrón 1:N — Arreglo de Subdocumentos Embebidos</h2>
-      <p>Cuando una entidad padre tiene <strong>múltiples entidades hijas</strong> (por ejemplo, un pedido con varios ítems), y esos ítems son parte inherente del pedido y no existen de forma autónoma en el sistema, se pueden incrustar como un <strong>arreglo de subdocumentos</strong>.</p>
+      <p>Cuando una entidad padre tiene <strong>múltiples entidades hijas</strong> (un pedido con varios ítems) y esos ítems son parte inherente del pedido, se pueden incrustar como un <strong>arreglo de subdocumentos</strong>.</p>
 
       <div class="visual-comparison" style="grid-template-columns: 1fr;">
         <div class="comparison-side nosql" style="background: rgba(25, 28, 35, 0.9);">
@@ -76,68 +76,68 @@
 <pre><code style="color:#d4d4d4">db.pedidos.insertOne({
   _id:        ObjectId("507f191e810c19729de860ea"),
   cliente_id: ObjectId("507f1f77bcf86cd799439011"),
-  fecha:      <code style="color:#ce9178">"2026-04-14"</code>,
-  estado:     <code style="color:#ce9178">"procesando"</code>,
-  total:      <code style="color:#b5cea8">125900</code>,
-
-  <code style="color:#6a9955">// Arreglo de subdocumentos — cada ítem es un objeto anidado</code>
-  items: [
+  fecha:      "2026-04-14",
+  estado:     "procesando",
+  total:      125900,
+</code>
+<code style="color:#6a9955">  // Arreglo de subdocumentos — cada ítem es un objeto anidado</code>
+<code style="color:#d4d4d4">  items: [
     {
-      producto_nombre: <code style="color:#ce9178">"Teclado Mecánico"</code>,
-      cantidad:        <code style="color:#b5cea8">1</code>,
-      precio_unitario: <code style="color:#b5cea8">85000</code>
+      producto_nombre: "Teclado Mecánico",
+      cantidad:        1,
+      precio_unitario: 85000
     },
     {
-      producto_nombre: <code style="color:#ce9178">"Mouse Inalámbrico"</code>,
-      cantidad:        <code style="color:#b5cea8">2</code>,
-      precio_unitario: <code style="color:#b5cea8">20450</code>
+      producto_nombre: "Mouse Inalámbrico",
+      cantidad:        2,
+      precio_unitario: 20450
     }
   ]
 })</code></pre>
         </div>
       </div>
 
-      <p style="font-size: 0.9rem; color: var(--text-secondary)">*En SQL esto requeriría dos tablas (<code>pedidos</code> y <code>pedido_items</code>) con una FOREIGN KEY, y un JOIN para recuperar los datos completos. En MongoDB todo reside en un solo documento, en un solo bloque de disco, leído en una sola operación de I/O.*</p>
+      <p style="font-size: 0.9rem; color: var(--text-secondary)">*En SQL esto requeriría dos tablas (<code>pedidos</code> y <code>pedido_items</code>) con FOREIGN KEY y un JOIN para recuperar los datos completos. En MongoDB todo reside en un solo documento, en un solo bloque de disco, leído en una sola operación de I/O.*</p>
 
-      <h2>Patrón 1:N — Referencia por ObjectId (Documentos Independientes)</h2>
-      <p>Cuando el documento hijo tiene <strong>vida propia</strong> (se consulta de forma autónoma, se actualiza frecuentemente o pertenece a múltiples padres), se guarda en su propia colección y el padre solo almacena su <code>_id</code>. Este patrón equivale a la clave foránea de SQL.</p>
+      <h2>Patrón 1:N — Referencia por ObjectId</h2>
+      <p>Cuando el documento hijo tiene <strong>vida propia</strong> (se consulta de forma autónoma, se actualiza frecuentemente o pertenece a múltiples padres), se guarda en su propia colección y el padre almacena solo su <code>_id</code>. Este patrón equivale a la clave foránea de SQL.</p>
 
       <div class="visual-comparison">
         <div class="comparison-side sql">
           <h3>Colección: autores</h3>
 <pre><code style="color:#d4d4d4">db.autores.insertOne({
   _id:    ObjectId("a1b2c3"),
-  nombre: <code style="color:#ce9178">"Gabriel Morales"</code>,
-  pais:   <code style="color:#ce9178">"Chile"</code>,
-  bio:    <code style="color:#ce9178">"Escritor y..."</code>
+  nombre: "Gabriel Morales",
+  pais:   "Chile",
+  bio:    "Escritor y..."
 })</code></pre>
         </div>
         <div class="comparison-side nosql">
           <h3>Colección: libros (con referencia)</h3>
 <pre><code style="color:#d4d4d4">db.libros.insertOne({
   _id:    ObjectId("d4e5f6"),
-  titulo: <code style="color:#ce9178">"El Código del Algoritmo"</code>,
-  year:   <code style="color:#b5cea8">2025</code>,
-  <code style="color:#6a9955">// Referencia manual al ObjectId del autor</code>
-  autor_id: ObjectId(<code style="color:#ce9178">"a1b2c3"</code>)
+  titulo: "El Código del Algoritmo",
+  year:   2025,
+</code><code style="color:#6a9955">  // Referencia manual al ObjectId del autor</code>
+<code style="color:#d4d4d4">  autor_id: ObjectId("a1b2c3")
 })</code></pre>
         </div>
       </div>
 
-      <p style="background: rgba(245,158,11,0.1); padding: 1.5rem; border-radius: 8px; border-left: 4px solid #f59e0b;"><strong>Nota importante:</strong> MongoDB no impone integridad referencial automática. Si eliminas el documento de un autor, los libros que lo referencian <strong>no se eliminan en cascada</strong> — quedarán con un <code>autor_id</code> "huérfano". La integridad referencial debe implementarse a nivel de aplicación o con validadores de esquema.</p>
+      <p style="background: rgba(245,158,11,0.1); padding: 1.5rem; border-radius: 8px; border-left: 4px solid #f59e0b;"><strong>Nota importante:</strong> MongoDB no impone integridad referencial automática. Si eliminas el documento de un autor, los libros que lo referencian <strong>no se eliminan en cascada</strong> — quedarán con un <code>autor_id</code> huérfano. La integridad referencial debe implementarse a nivel de aplicación.</p>
 
       <h2>Patrón N:N — Arreglo de Referencias</h2>
-      <p>Las relaciones muchos-a-muchos (un estudiante puede estar en muchos cursos, y un curso puede tener muchos estudiantes) se modelan guardando un <strong>arreglo de ObjectIds</strong> en uno o en ambos lados de la relación.</p>
+      <p>Las relaciones muchos-a-muchos se modelan guardando un <strong>arreglo de ObjectIds</strong> en uno o ambos lados de la relación.</p>
 
 <pre><code style="color:#6a9955"># Estudiante con arreglo de IDs de cursos inscritos</code>
 <code style="color:#d4d4d4">db.estudiantes.insertOne({
   _id:    ObjectId("est001"),
-  nombre: <code style="color:#ce9178">"Carlos Fuentes"</code>,
-  <code style="color:#6a9955">// Arreglo de referencias a la colección "cursos"</code>
-  cursos_inscritos: [
-    ObjectId(<code style="color:#ce9178">"curso_bd_nosql"</code>),
-    ObjectId(<code style="color:#ce9178">"curso_python"</code>),
-    ObjectId(<code style="color:#ce9178">"curso_docker"</code>)
+  nombre: "Carlos Fuentes",
+</code><code style="color:#6a9955">  // Arreglo de referencias a la colección "cursos"</code>
+<code style="color:#d4d4d4">  cursos_inscritos: [
+    ObjectId("curso_bd_nosql"),
+    ObjectId("curso_python"),
+    ObjectId("curso_docker")
   ]
 })</code></pre>
 
@@ -180,7 +180,7 @@
         </tbody>
       </table>
 
-      <p style="background: rgba(52,211,153,0.1); padding: 1.5rem; border-radius: 8px; border-left: 4px solid #34d399;"><strong>Regla de oro:</strong> Diseña tu esquema en función de <em>cómo tu aplicación lee los datos</em>, no de cómo los datos se relacionan conceptualmente. Si el 90% de las queries necesitan un usuario con su dirección juntos, embeberla es correcto. Si frecuentemente consultas direcciones sin usuarios, la dirección merece su propia colección.</p>
+      <p style="background: rgba(52,211,153,0.1); padding: 1.5rem; border-radius: 8px; border-left: 4px solid #34d399;"><strong>Regla de oro:</strong> Diseña tu esquema en función de <em>cómo tu aplicación lee los datos</em>, no de cómo se relacionan conceptualmente. Si el 90% de las queries necesitan un usuario con su dirección juntos, embeberla es correcto. Si frecuentemente consultas direcciones sin usuarios, la dirección merece su propia colección.</p>
 
       <div class="page-nav">
         <a href="/m3-gestion.html" class="nav-btn">← Gestión de Colecciones</a>

@@ -12,7 +12,10 @@
   <main class="container content-wrapper">
     <div class="nav-header">
       <a href="/index.html" class="back-link">← Volver al Menú Principal</a>
-      <span class="badge" style="padding: 0.3rem 1rem; border-radius: 50px; background: rgba(52, 211, 153, 0.15); color: #34d399; font-size: 0.8rem; font-weight: 600; border: 1px solid rgba(52, 211, 153, 0.3);">MÓDULO 02</span>
+      <div style="display: flex; gap: 1rem; align-items: center;">
+        <button onclick="toggleTheme()" class="nav-btn" style="padding: 0.3rem 0.8rem; font-size: 1.2rem; background: transparent; border: 1px solid var(--card-border); cursor: pointer; border-radius: 50px; color: var(--text-primary); display: flex; align-items: center; justify-content: center; width: 38px; height: 38px; transition: all 0.3s;" aria-label="Cambiar tema">🌓</button>
+        <span class="badge" style="padding: 0.3rem 1rem; border-radius: 50px; background: rgba(52, 211, 153, 0.15); color: #34d399; font-size: 0.8rem; font-weight: 600; border: 1px solid rgba(52, 211, 153, 0.3); margin-bottom: 0;">MÓDULO 02</span>
+      </div>
     </div>
     
     <article class="page-card">
@@ -59,5 +62,30 @@
       </div>
     </article>
   </main>
+  
+  <footer>
+    <p>© 2026 German Mardones. Todos los derechos reservados.</p>
+  </footer>
+
+  <script>
+    function toggleTheme() {
+      const body = document.body;
+      const currentTheme = body.getAttribute('data-theme') || 'dark';
+      const newTheme = currentTheme === 'light' ? 'dark' : 'light';
+      if (newTheme === 'dark') {
+          body.removeAttribute('data-theme');
+      } else {
+          body.setAttribute('data-theme', 'light');
+      }
+      localStorage.setItem('theme', newTheme);
+    }
+    
+    const savedTheme = localStorage.getItem('theme');
+    if (savedTheme === 'dark') {
+      document.body.removeAttribute('data-theme');
+    } else if (savedTheme === 'light') {
+      document.body.setAttribute('data-theme', 'light');
+    }
+  </script>
 </body>
 </html>

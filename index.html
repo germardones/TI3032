@@ -12,7 +12,10 @@
   <div class="glass-background"></div>
   <main class="container">
     <header class="hero">
-      <div class="badge">TI3032</div>
+      <div style="display: flex; justify-content: center; align-items: center; position: relative;">
+        <div class="badge">TI3032</div>
+        <button onclick="toggleTheme()" class="nav-btn" style="position: absolute; right: 0; padding: 0.3rem 0.8rem; font-size: 1.2rem; background: transparent; border: 1px solid var(--card-border); cursor: pointer; border-radius: 50px; color: var(--text-primary); display: flex; align-items: center; justify-content: center; width: 38px; height: 38px; transition: all 0.3s;" aria-label="Cambiar tema">🌓</button>
+      </div>
       <h1>Bases de Datos No Estructuradas</h1>
       <p class="subtitle">Arquitectura de Software, Big Data y Sistemas Distribuidos.</p>
       <div class="teacher-info">
@@ -68,5 +71,26 @@
   <footer>
     <p>© 2026 German Mardones. Todos los derechos reservados.</p>
   </footer>
+
+  <script>
+    function toggleTheme() {
+      const body = document.body;
+      const currentTheme = body.getAttribute('data-theme') || 'dark';
+      const newTheme = currentTheme === 'light' ? 'dark' : 'light';
+      if (newTheme === 'dark') {
+          body.removeAttribute('data-theme');
+      } else {
+          body.setAttribute('data-theme', 'light');
+      }
+      localStorage.setItem('theme', newTheme);
+    }
+    
+    const savedTheme = localStorage.getItem('theme');
+    if (savedTheme === 'dark') {
+      document.body.removeAttribute('data-theme');
+    } else if (savedTheme === 'light') {
+      document.body.setAttribute('data-theme', 'light');
+    }
+  </script>
 </body>
 </html>

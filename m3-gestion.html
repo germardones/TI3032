@@ -128,9 +128,18 @@
 
 <code style="color:#6a9955"># Eliminar TODA la base de datos activa (¡Operación nuclear!)</code>
 <code style="color:#d4d4d4">db.dropDatabase()         </code><code style="color:#6a9955">// → { ok: 1, dropped: "tienda_online" }</code></pre>
-          <p style="text-align: left; font-size: 0.9rem; color: var(--text-secondary); margin-top: 1rem;">La llamada a <code>db.dropDatabase()</code> destruye permanentemente todas las colecciones y documentos de la base de datos activa. En producción esta operación requiere permisos de rol <code>dbAdmin</code> o <code>dbOwner</code> y jamás debe ejecutarse sin una copia de seguridad verificada.</p>
+          <p style="text-align: left; font-size: 0.9rem; color: var(--text-secondary); margin-top: 1rem;">La llamada a <code>db.dropDatabase()</code> destruye permanentemente todas las colecciones y documentos de la base de datos activa.</p>
         </div>
       </div>
+
+      <h3 style="margin-top: 2rem;">Seguridad RBAC: Roles para Evitar Desastres</h3>
+      <p>Para mitigar el riesgo de que un desarrollador novato o una aplicación comprometida ejecute por error sentencias termonucleares como <code>dropDatabase()</code>, MongoDB despliega un <strong>Control de Acceso Basado en Roles (RBAC)</strong> por defecto.</p>
+      
+      <ul style="color:var(--text-secondary); padding-left:20px; font-size:1.05rem; margin-bottom:2rem">
+        <li style="margin-bottom:0.5rem"><strong>El Estándar <code>readWrite</code>:</strong> Rol asignado al 99% de las aplicaciones conectadas. Permite estrictamente el CRUD diario sobre los datos (Insert, Find, Update, Delete) pero <strong>bloquea operaciones de infraestructura</strong>. El sistema rechazaría instantáneamente un intento de lanzar <code>dropDatabase()</code> o <code>drop()</code> proveniente de tu backend.</li>
+        <li style="margin-bottom:0.5rem"><strong>Nivel Intermedio <code>dbAdmin</code> / <code>dbOwner</code>:</strong> Roles asignados discretamente a mantenedores de módulos. Tienen autorización en la manipulación estructural y gestión completa dentro del scope de una sola BD (incluyendo crear índices rápidos y ejecutar comandos de borrado estructural en la consola).</li>
+        <li><strong>Nivel Absoluto <code>root</code> / <code>userAdminAnyDatabase</code>:</strong> El superusuario omnipotente. Con un control global ilimitado e ininterrumpido a lo largo de todos los clusters y gestores de configuración. Existen como un backdoor o credencial maestra que <strong>jamás</strong> debe ser quemada inyectándola en el código fuente de una API para conectarse al servicio por motivos críticos de ciberseguridad.</li>
+      </ul>
 
       <h2>Renombrar una Colección</h2>
       <p>MongoDB permite renombrar colecciones sin mover físicamente los datos. La operación solo actualiza los metadatos del catálogo interno; todos los documentos e índices se conservan intactos.</p>

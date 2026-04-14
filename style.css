@@ -96,7 +96,7 @@ body {
 
 /* Visual Components (Tables, Diagrams, Grids) */
 .visual-comparison { display: grid; grid-template-columns: 1fr 1fr; gap: 2rem; margin: 2.5rem 0; }
-.comparison-side { background: rgba(0,0,0,0.3); padding: 2rem; border-radius: 12px; border: 1px solid rgba(255,255,255,0.05); }
+.comparison-side { background: rgba(0,0,0,0.3); padding: 2rem; border-radius: 12px; border: 1px solid rgba(255,255,255,0.05); min-width: 0; overflow: hidden; }
 .comparison-side.sql { border-top: 4px solid var(--text-secondary); }
 .comparison-side.nosql { border-top: 4px solid var(--accent-hover); background: rgba(123, 66, 255, 0.05); }
 .comparison-side h3 { margin-bottom: 1.5rem; color: #fff; font-size: 1.3rem; text-align: center; }

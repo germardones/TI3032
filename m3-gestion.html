@@ -1,0 +1,150 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Gestión de Bases de Datos y Colecciones | Módulo 3 | TI3032</title>
+  <link rel="stylesheet" href="/style.css">
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;800&display=swap" rel="stylesheet">
+</head>
+<body>
+  <div class="glass-background"></div>
+  <main class="container content-wrapper">
+    <div class="nav-header">
+      <a href="/index.html" class="back-link">← Volver al Menú Principal</a>
+      <span class="badge" style="padding: 0.3rem 1rem; border-radius: 50px; background: rgba(245, 158, 11, 0.15); color: #f59e0b; font-size: 0.8rem; font-weight: 600; border: 1px solid rgba(245, 158, 11, 0.3);">MÓDULO 03</span>
+    </div>
+
+    <article class="page-card">
+      <h1>2. Creación y Eliminación de Bases de Datos y Colecciones</h1>
+
+      <p>Una de las diferencias más radicales de MongoDB respecto a los RDBMS es su modelo de <strong>creación implícita diferida</strong>: ni las bases de datos ni las colecciones se crean con sentencias DDL explícitas como <code>CREATE DATABASE</code> o <code>CREATE TABLE</code>. En cambio, MongoDB las instancia en memoria y las persiste en disco en el momento en que recibe el primer documento. Este enfoque prioriza la agilidad en el desarrollo sobre la rigidez estructural.</p>
+
+      <h2>El Comando <code>use</code> — Selección y Creación Implícita</h2>
+      <p>El comando <code>use &lt;nombre&gt;</code> instruye al shell para apuntar el contexto de todas las operaciones siguientes hacia una base de datos específica. Si la base de datos <strong>no existe todavía</strong>, MongoDB la reserva en memoria pero <em>no la escribe a disco</em> hasta que se inserte el primer documento en alguna de sus colecciones.</p>
+
+      <div class="visual-comparison" style="grid-template-columns: 1fr;">
+        <div class="comparison-side nosql" style="background: rgba(25, 28, 35, 0.9);">
+<pre><code style="color:#6a9955"># Seleccionar (o crear implícitamente) una base de datos</code>
+<code style="color:#d4d4d4">use tienda_online</code>
+<code style="color:#6a9955">// → switched to db tienda_online</code>
+
+<code style="color:#6a9955"># Verificar en qué base de datos estás actualmente</code>
+<code style="color:#d4d4d4">db</code>
+<code style="color:#6a9955">// → tienda_online</code>
+
+<code style="color:#6a9955"># Listar TODAS las bases de datos persistidas en disco</code>
+<code style="color:#d4d4d4">show dbs</code>
+<code style="color:#6a9955">// ⚠ tienda_online NO aparece aquí todavía — está vacía.</code>
+<code style="color:#6a9955">// admin    40.00 KiB</code>
+<code style="color:#6a9955">// config  108.00 KiB</code>
+<code style="color:#6a9955">// local    72.00 KiB</code></pre>
+        </div>
+      </div>
+
+      <p style="background: rgba(245,158,11,0.1); padding: 1.5rem; border-radius: 8px; border-left: 4px solid #f59e0b;"><strong>Comportamiento clave:</strong> <code>show dbs</code> solo lista bases de datos que contienen al menos una colección con al menos un documento. Una DB vacía existe únicamente en el contexto del shell. Este es un mecanismo de <em>lazy evaluation</em> a nivel de sistema de archivos.</p>
+
+      <h2>Creación de Colecciones — Implícita y Explícita</h2>
+      <p>Al igual que con las bases de datos, las colecciones se crean automáticamente al insertar el primer documento. Sin embargo, el comando <code>db.createCollection()</code> permite crear colecciones con opciones avanzadas de configuración antes de insertar datos.</p>
+
+      <div class="visual-comparison">
+        <div class="comparison-side sql">
+          <h3>Creación Implícita (Más Común)</h3>
+<pre><code style="color:#6a9955"># La colección "productos" se crea</code>
+<code style="color:#6a9955"># automáticamente en este insert</code>
+<code style="color:#d4d4d4">db.productos.insertOne({
+  nombre: "Teclado Mecánico",
+  precio: 85000
+})</code>
+
+<code style="color:#6a9955"># Verificar que fue creada</code>
+<code style="color:#d4d4d4">show collections</code>
+<code style="color:#6a9955">// → productos</code></pre>
+        </div>
+        <div class="comparison-side nosql">
+          <h3>Creación Explícita con Opciones</h3>
+<pre><code style="color:#6a9955"># Crear una colección con validación</code>
+<code style="color:#d4d4d4">db.createCollection("usuarios", {
+  validator: {
+    $jsonSchema: {
+      bsonType: "object",
+      required: ["email", "nombre"],
+      properties: {
+        email: { bsonType: "string" },
+        edad:  { bsonType: "int",
+                 minimum: 18 }
+      }
+    }
+  }
+})</code></pre>
+        </div>
+      </div>
+
+      <h2>Colecciones Limitadas (<em>Capped Collections</em>)</h2>
+      <p>Un tipo especial de colección con <strong>tamaño fijo en bytes y orden de inserción garantizado</strong>. Cuando alcanza el límite, sobreescribe automáticamente los documentos más antiguos (como un buffer circular). Son ideales para logs, colas de eventos y streams de datos en tiempo real.</p>
+
+<pre><code style="color:#6a9955"># Crear colección capped de máximo 5 MB y 1000 documentos</code>
+<code style="color:#d4d4d4">db.createCollection("logs_sistema", {
+  capped:  <code style="color:#569cd6">true</code>,
+  size:    <code style="color:#b5cea8">5242880</code>,   <code style="color:#6a9955">// 5 MB en bytes (obligatorio)</code>
+  max:     <code style="color:#b5cea8">1000</code>        <code style="color:#6a9955">// Límite adicional de documentos (opcional)</code>
+})</code>
+
+<code style="color:#6a9955"># Verificar que fue creada como capped</code>
+<code style="color:#d4d4d4">db.logs_sistema.isCapped()   <span style="color:#6a9955">// → true</span></code></pre>
+
+      <p style="font-size: 0.9rem; color: var(--text-secondary)">*En colecciones capped no se pueden eliminar documentos individuales ni actualizar documentos de forma que aumenten su tamaño. Estas restricciones garantizan el orden FIFO del buffer circular.*</p>
+
+      <h2>Inspeccionando la Estructura Actual</h2>
+      <p>Estos comandos de inspección son fundamentales durante el desarrollo y la administración del servidor para auditar qué estructuras existen en el sistema:</p>
+
+<pre><code style="color:#6a9955"># Listar todas las bases de datos del servidor</code>
+<code style="color:#d4d4d4">show dbs</code>
+
+<code style="color:#6a9955"># Listar todas las colecciones de la DB activa</code>
+<code style="color:#d4d4d4">show collections</code>
+
+<code style="color:#6a9955"># Ver estadísticas detalladas de una colección</code>
+<code style="color:#d4d4d4">db.productos.stats()</code>
+<code style="color:#6a9955">// → ns, count, size, avgObjSize, storageSize, totalIndexSize, ...</code>
+
+<code style="color:#6a9955"># Contar documentos en una colección</code>
+<code style="color:#d4d4d4">db.productos.countDocuments()</code></pre>
+
+      <h2>Eliminación de Colecciones — <code>drop()</code></h2>
+      <p>El método <code>drop()</code> elimina permanentemente una colección: <strong>todos sus documentos, todos sus índices y su configuración de validación</strong>. La operación es atómica e irreversible. No existe una papelera de reciclaje en MongoDB sin configuración de backup previa.</p>
+
+      <div class="visual-comparison" style="grid-template-columns: 1fr;">
+        <div class="comparison-side" style="background: rgba(239,68,68,0.08); border-top: 4px solid #ef4444;">
+          <h3 style="color: #ef4444; text-align: left;">Operaciones de Eliminación — Sin Reversa</h3>
+<pre style="background: rgba(0,0,0,0.5); border-color: #ef4444;"><code style="color:#6a9955"># Eliminar UNA colección específica</code>
+<code style="color:#d4d4d4">db.productos.drop()         <span style="color:#6a9955">// → true (si existía) | false (si no existía)</span></code>
+
+<code style="color:#6a9955"># Verificar que ya no existe</code>
+<code style="color:#d4d4d4">show collections            <span style="color:#6a9955">// "productos" ya no aparece</span></code>
+
+<code style="color:#6a9955"># Eliminar TODA la base de datos activa (¡Operación nuclear!)</code>
+<code style="color:#d4d4d4">db.dropDatabase()           <span style="color:#6a9955">// → { ok: 1, dropped: "tienda_online" }</span></code></pre>
+          <p style="text-align: left; font-size: 0.9rem; color: var(--text-secondary); margin-top: 1rem;">La llamada a <code>db.dropDatabase()</code> destruye permanentemente todas las colecciones y documentos de la base de datos activa. En entornos de producción esta operación requiere permisos de rol <code>dbAdmin</code> o <code>dbOwner</code> y jamás debe ejecutarse sin una copia de seguridad verificada.</p>
+        </div>
+      </div>
+
+      <h2>Renombrar una Colección</h2>
+      <p>MongoDB permite renombrar colecciones sin mover físicamente los datos mediante el comando <code>renameCollection</code>. Esta operación es interna al motor y no copia ni elimina documentos; solo actualiza los metadatos del catálogo.</p>
+
+<pre><code style="color:#d4d4d4">db.productos.renameCollection("catalogo_productos")</code>
+<code style="color:#6a9955">// La colección ahora se llama "catalogo_productos"</code>
+<code style="color:#6a9955">// Todos los documentos e índices se conservan intactos</code></pre>
+
+      <div class="page-nav">
+        <a href="/m3-instalacion.html" class="nav-btn">← Instalación</a>
+        <a href="/m3-asociaciones.html" class="nav-btn next" style="background: #f59e0b;">Siguiente: Asociaciones y Subdocumentos →</a>
+      </div>
+    </article>
+  </main>
+
+  <footer>
+    <p>© 2026 German Mardones. Todos los derechos reservados.</p>
+  </footer>
+</body>
+</html>

@@ -1,0 +1,137 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Instalación de MongoDB | Módulo 3 | TI3032</title>
+  <link rel="stylesheet" href="/style.css">
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;800&display=swap" rel="stylesheet">
+</head>
+<body>
+  <div class="glass-background"></div>
+  <main class="container content-wrapper">
+    <div class="nav-header">
+      <a href="/index.html" class="back-link">← Volver al Menú Principal</a>
+      <span class="badge" style="padding: 0.3rem 1rem; border-radius: 50px; background: rgba(245, 158, 11, 0.15); color: #f59e0b; font-size: 0.8rem; font-weight: 600; border: 1px solid rgba(245, 158, 11, 0.3);">MÓDULO 03</span>
+    </div>
+
+    <article class="page-card">
+      <h1>1. Instalación de MongoDB</h1>
+
+      <p>MongoDB se distribuye como un ecosistema de tres herramientas complementarias: el <strong>proceso daemon <code>mongod</code></strong> que ejecuta el motor de base de datos, el <strong>cliente de shell <code>mongosh</code></strong> (MongoDB Shell) para interacción programática en REPL JavaScript, y <strong>MongoDB Compass</strong> como interfaz gráfica de administración y diagnóstico. Entender sus roles antes de instalar evita confusión en la configuración del entorno.</p>
+
+      <h2>Arquitectura de Componentes</h2>
+
+      <div class="scale-diagram" style="margin-top: 2rem;">
+        <div class="scale-box" style="background: rgba(245,158,11,0.05); border-color: #f59e0b;">
+          <h3 style="color: #f59e0b">mongod</h3>
+          <p style="font-size: 0.9rem">Proceso servidor (<em>daemon</em>). Gestiona archivos de datos en disco usando el motor <strong>WiredTiger</strong>. Escucha en el puerto <strong>TCP/27017</strong> por defecto. Es quien procesa las lecturas/escrituras reales.</p>
+        </div>
+        <div class="scale-box" style="background: rgba(52,211,153,0.05); border-color: #34d399;">
+          <h3 style="color: #34d399">mongosh</h3>
+          <p style="font-size: 0.9rem">Shell cliente basado en V8 (el motor JS de Node.js). Envía comandos al <code>mongod</code> vía protocolo de red. Sustituyó al antiguo <code>mongo</code> shell desde MongoDB 5.0.</p>
+        </div>
+        <div class="scale-box" style="background: rgba(123,66,255,0.05); border-color: #7b42ff;">
+          <h3 style="color: #b08dff">Compass</h3>
+          <p style="font-size: 0.9rem">GUI oficial. Permite explorar colecciones, construir queries visualmente, analizar índices y revisar planes de ejecución (<em>explain plans</em>) sin escribir comandos manualmente.</p>
+        </div>
+      </div>
+
+      <h2>Instalación en Linux — Ubuntu 22.04 / 24.04</h2>
+      <p>El método correcto en entornos Linux es usar el <strong>repositorio oficial de MongoDB vía APT</strong>. Los paquetes genéricos de los repositorios del sistema operativo están generalmente desactualizados varios ciclos de versión. El proceso requiere importar la clave GPG pública para verificar la autenticidad de los paquetes.</p>
+
+      <div class="visual-comparison" style="grid-template-columns: 1fr;">
+        <div class="comparison-side nosql" style="background: rgba(25, 28, 35, 0.9);">
+          <p style="color: #f59e0b; margin-bottom: 1rem; font-weight: 600;">Instalación completa paso a paso en Ubuntu</p>
+<pre><code style="color:#6a9955"># Paso 1: Importar la clave GPG pública de MongoDB 7.x</code>
+<code style="color:#d4d4d4">curl -fsSL https://www.mongodb.org/static/pgp/server-7.0.asc | \
+  sudo gpg -o /usr/share/keyrings/mongodb-server-7.0.gpg --dearmor</code>
+
+<code style="color:#6a9955"># Paso 2: Registrar el repositorio oficial en APT</code>
+<code style="color:#d4d4d4">echo "deb [ arch=amd64,arm64 \
+  signed-by=/usr/share/keyrings/mongodb-server-7.0.gpg ] \
+  https://repo.mongodb.org/apt/ubuntu jammy/mongodb-org/7.0 multiverse" | \
+  sudo tee /etc/apt/sources.list.d/mongodb-org-7.0.list</code>
+
+<code style="color:#6a9955"># Paso 3: Actualizar índice e instalar el engine</code>
+<code style="color:#d4d4d4">sudo apt-get update
+sudo apt-get install -y mongodb-org</code>
+
+<code style="color:#6a9955"># Paso 4: Iniciar el daemon y habilitarlo en el arranque del OS</code>
+<code style="color:#d4d4d4">sudo systemctl start mongod
+sudo systemctl enable mongod</code>
+
+<code style="color:#6a9955"># Confirmar estado del proceso del daemon</code>
+<code style="color:#d4d4d4">sudo systemctl status mongod</code></pre>
+        </div>
+      </div>
+
+      <p style="margin-top: 1.5rem;">Los archivos de datos del motor WiredTiger se almacenan en <code style="color:#f59e0b">/var/lib/mongodb/</code> y los logs del daemon en <code style="color:#f59e0b">/var/log/mongodb/mongod.log</code>. La configuración del servidor reside en <code>/etc/mongod.conf</code> en formato YAML.</p>
+
+      <h2>Instalación en macOS — Homebrew</h2>
+      <p>macOS no distribuye MongoDB en sus repositorios nativos. Se usa el <strong>tap oficial de Homebrew</strong> mantenido por el equipo de MongoDB Inc. Requiere tener Homebrew instalado previamente.</p>
+
+<pre><code style="color:#6a9955"># Registrar el tap oficial de fórmulas MongoDB</code>
+<code style="color:#d4d4d4">brew tap mongodb/brew</code>
+
+<code style="color:#6a9955"># Instalar MongoDB Community Edition 7.0</code>
+<code style="color:#d4d4d4">brew install mongodb-community@7.0</code>
+
+<code style="color:#6a9955"># Iniciar el servicio via launchd (auto-reinicio tras reboot)</code>
+<code style="color:#d4d4d4">brew services start mongodb-community@7.0</code>
+
+<code style="color:#6a9955"># Conectar con el shell para verificar</code>
+<code style="color:#d4d4d4">mongosh</code></pre>
+
+      <h2>Alternativa con Docker — Entornos de Desarrollo Modernos</h2>
+      <p>Docker es el estándar en entornos profesionales y CI/CD. Permite ejecutar múltiples versiones de MongoDB en paralelo en contenedores aislados sin conflictos de dependencias en el sistema operativo anfitrión.</p>
+
+<pre><code style="color:#6a9955"># Descargar imagen oficial y levantar el contenedor con persistencia</code>
+<code style="color:#d4d4d4">docker run -d \
+  --name mongodb-dev \
+  -p 27017:27017 \
+  -e MONGO_INITDB_ROOT_USERNAME=admin \
+  -e MONGO_INITDB_ROOT_PASSWORD=secreto \
+  -v mongodb_data:/data/db \
+  mongo:7.0</code>
+
+<code style="color:#6a9955"># Conectar el shell directamente al contenedor</code>
+<code style="color:#d4d4d4">docker exec -it mongodb-dev mongosh \
+  -u admin -p secreto --authenticationDatabase admin</code></pre>
+
+      <p style="font-size: 0.9rem; color: var(--text-secondary)">*El flag <code>-v mongodb_data:/data/db</code> crea un volumen Docker persistente. Sin él, todos los datos se destruyen cuando el contenedor se elimina o reinicia. <code>-p 27017:27017</code> expone el puerto del contenedor al sistema anfitrión para que <code>mongosh</code> local pueda conectar.*</p>
+
+      <h2>Alternativa Cloud — MongoDB Atlas (Sin Instalación Local)</h2>
+      <p>MongoDB Atlas es el servicio gestionado oficial (DBaaS). Ofrece un <strong>clúster gratuito permanente M0 de 512 MB</strong> desplegado en AWS, GCP o Azure. Es la opción ideal para proyectos académicos y prototipos donde no se requiere infraestructura local.</p>
+
+      <p style="background: rgba(245,158,11,0.1); padding: 1.5rem; border-radius: 8px; border-left: 4px solid #f59e0b;"><strong>URI de Conexión Atlas:</strong> Todos los clientes (mongosh, drivers de Node.js, Python, Java) se conectan mediante una cadena SRV:<br><code style="color: #f59e0b">mongodb+srv://usuario:contraseña@cluster0.abc.mongodb.net/miBaseDeDatos</code><br>Este string incluye descubrimiento automático de nodos del clúster via DNS SRV, reintento automático de escrituras y TLS habilitado por defecto.</p>
+
+      <h2>Verificación de la Instalación</h2>
+      <p>Ejecuta estos comandos de diagnóstico en <code>mongosh</code> para confirmar que el motor responde correctamente y está en el estado esperado:</p>
+
+<pre><code style="color:#6a9955"># Conectar al servidor local (puerto 27017 por defecto)</code>
+<code style="color:#d4d4d4">mongosh</code>
+
+<code style="color:#6a9955"># Consultar la versión del motor del servidor</code>
+<code style="color:#d4d4d4">db.version()               <span style="color:#6a9955">// → "7.0.x"</span></code>
+
+<code style="color:#6a9955"># Listar las bases de datos existentes en el servidor</code>
+<code style="color:#d4d4d4">show dbs</code>
+
+<code style="color:#6a9955"># Inspeccionar métricas internas del servidor (uptime, conexiones, etc.)</code>
+<code style="color:#d4d4d4">db.serverStatus().uptime   <span style="color:#6a9955">// Segundos activo desde el último arranque</span></code></pre>
+
+      <p style="background: rgba(52,211,153,0.1); padding: 1.5rem; border-radius: 8px; border-left: 4px solid #34d399;"><strong>Output esperado de <code>show dbs</code>:</strong> Verás tres bases de datos internas del sistema: <code>admin</code> (control de acceso y autenticación), <code>config</code> (metadatos de sharding) y <code>local</code> (datos de replicación no replicados). Estas son gestionadas exclusivamente por el motor. Nunca insertes datos directamente en ellas.</p>
+
+      <div class="page-nav">
+        <a href="/index.html" class="nav-btn">← Menú Principal</a>
+        <a href="/m3-gestion.html" class="nav-btn next" style="background: #f59e0b;">Siguiente: Gestión de Bases de Datos →</a>
+      </div>
+    </article>
+  </main>
+
+  <footer>
+    <p>© 2026 German Mardones. Todos los derechos reservados.</p>
+  </footer>
+</body>
+</html>

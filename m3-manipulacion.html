@@ -1,0 +1,195 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Manipulación de Subdocumentos y Arreglos | Módulo 3 | TI3032</title>
+  <link rel="stylesheet" href="/style.css">
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;800&display=swap" rel="stylesheet">
+</head>
+<body>
+  <div class="glass-background"></div>
+  <main class="container content-wrapper">
+    <div class="nav-header">
+      <a href="/index.html" class="back-link">← Volver al Menú Principal</a>
+      <span class="badge" style="padding: 0.3rem 1rem; border-radius: 50px; background: rgba(245, 158, 11, 0.15); color: #f59e0b; font-size: 0.8rem; font-weight: 600; border: 1px solid rgba(245, 158, 11, 0.3);">MÓDULO 03</span>
+    </div>
+
+    <article class="page-card">
+      <h1>4. Manipulación de Subdocumentos y Arreglos</h1>
+
+      <p>Saber incrustar datos es solo la mitad del camino: el desafío real es <strong>consultarlos y modificarlos eficientemente</strong> una vez que viven anidados en el árbol de un documento. MongoDB ofrece una sintaxis de <em>dot notation</em> para navegar el árbol de objetos y un conjunto de <strong>operadores de arreglos</strong> que permiten modificar colecciones de forma atómica sin necesidad de reemplazar el documento completo.</p>
+
+      <h2>Dot Notation — Navegando Estructuras Anidadas</h2>
+      <p>La <strong>notación de punto</strong> (<em>dot notation</em>) permite referenciar campos de subdocumentos en queries y actualizaciones usando el formato <code>"padre.hijo.nieto"</code>. Es el equivalente al operador <code>.</code> de JavaScript para acceder a propiedades de objetos anidados.</p>
+
+      <div class="visual-comparison">
+        <div class="comparison-side sql">
+          <h3>Consultar Subdocumentos</h3>
+<pre><code style="color:#6a9955"># Buscar usuarios de Santiago</code>
+<code style="color:#6a9955"># (campo "ciudad" dentro de "direccion")</code>
+<code style="color:#d4d4d4">db.usuarios.find({
+  <code style="color:#ce9178">"direccion.ciudad"</code>: <code style="color:#ce9178">"Santiago"</code>
+})</code>
+
+<code style="color:#6a9955"># Filtro múltiple en subdocumento</code>
+<code style="color:#d4d4d4">db.usuarios.find({
+  <code style="color:#ce9178">"direccion.region"</code>:  <code style="color:#ce9178">"Metropolitana"</code>,
+  <code style="color:#ce9178">"perfil.nivel"</code>:      <code style="color:#ce9178">"senior"</code>
+})</code></pre>
+        </div>
+        <div class="comparison-side nosql">
+          <h3>Actualizar Subdocumentos</h3>
+<pre><code style="color:#6a9955"># Modificar un campo específico</code>
+<code style="color:#6a9955"># dentro del subdocumento embebido</code>
+<code style="color:#d4d4d4">db.usuarios.updateOne(
+  { email: <code style="color:#ce9178">"vrios@example.com"</code> },
+  { $set: {
+    <code style="color:#ce9178">"direccion.ciudad"</code>:        <code style="color:#ce9178">"Valparaíso"</code>,
+    <code style="color:#ce9178">"direccion.codigo_postal"</code>: <code style="color:#ce9178">"2340000"</code>
+  }}
+)</code></pre>
+        </div>
+      </div>
+
+      <p style="background: rgba(245,158,11,0.1); padding: 1.5rem; border-radius: 8px; border-left: 4px solid #f59e0b;"><strong>Por qué comillas:</strong> En mongosh las claves con <em>dot notation</em> deben ir entre comillas (<code>"direccion.ciudad"</code>) porque el punto es un carácter especial en JavaScript. Sin comillas, el motor interpretaría <code>direccion.ciudad</code> como acceso a propiedad del objeto <code>direccion</code>, no como una ruta de campo MongoDB.</p>
+
+      <h2>Consultando Arreglos — Operadores de Búsqueda</h2>
+      <p>MongoDB ofrece operadores especializados para filtrar documentos en función del contenido de sus arreglos embebidos.</p>
+
+<pre><code style="color:#6a9955"># $in — documentos donde el arreglo contiene AL MENOS uno de los valores</code>
+<code style="color:#d4d4d4">db.estudiantes.find({
+  cursos_inscritos: { $in: [<code style="color:#ce9178">"curso_bd_nosql"</code>, <code style="color:#ce9178">"curso_docker"</code>] }
+})</code>
+
+<code style="color:#6a9955"># $all — documentos donde el arreglo contiene TODOS los valores</code>
+<code style="color:#d4d4d4">db.estudiantes.find({
+  cursos_inscritos: { $all: [<code style="color:#ce9178">"curso_bd_nosql"</code>, <code style="color:#ce9178">"curso_python"</code>] }
+})</code>
+
+<code style="color:#6a9955"># $size — documentos donde el arreglo tiene exactamente N elementos</code>
+<code style="color:#d4d4d4">db.pedidos.find({
+  items: { $size: <code style="color:#b5cea8">3</code> }   <code style="color:#6a9955">// Pedidos con exactamente 3 ítems</code>
+})</code></pre>
+
+      <h2><code>$elemMatch</code> — Condiciones Compuestas en Arreglos</h2>
+      <p>Cuando necesitas que <strong>un único elemento</strong> del arreglo cumpla simultáneamente múltiples condiciones, debes usar <code>$elemMatch</code>. Sin él, MongoDB evaluaría cada condición por separado contra diferentes elementos del arreglo.</p>
+
+      <div class="visual-comparison">
+        <div class="comparison-side sql">
+          <h3>Sin $elemMatch (incorrecto)</h3>
+<pre><code style="color:#6a9955"># Busca pedidos donde items tenga</code>
+<code style="color:#6a9955"># algún elemento con cantidad > 1</code>
+<code style="color:#6a9955"># Y algún elemento con precio < 50000</code>
+<code style="color:#6a9955"># (pueden ser elementos DISTINTOS!)</code>
+<code style="color:#d4d4d4">db.pedidos.find({
+  <code style="color:#ce9178">"items.cantidad"</code>:        { $gt: <code style="color:#b5cea8">1</code> },
+  <code style="color:#ce9178">"items.precio_unitario"</code>: { $lt: <code style="color:#b5cea8">50000</code> }
+})</code></pre>
+        </div>
+        <div class="comparison-side nosql">
+          <h3>Con $elemMatch (correcto)</h3>
+<pre><code style="color:#6a9955"># Busca pedidos donde existe UN item</code>
+<code style="color:#6a9955"># que cumpla AMBAS condiciones a la vez</code>
+<code style="color:#d4d4d4">db.pedidos.find({
+  items: {
+    $elemMatch: {
+      cantidad:        { $gt: <code style="color:#b5cea8">1</code> },
+      precio_unitario: { $lt: <code style="color:#b5cea8">50000</code> }
+    }
+  }
+})</code></pre>
+        </div>
+      </div>
+
+      <h2>Operadores de Mutación de Arreglos</h2>
+      <p>Estos operadores modifican los arreglos de forma <strong>atómica</strong> — el motor aplica la mutación en una sola operación de escritura sin necesidad de leer el documento primero en el cliente, modificarlo en memoria y reescribirlo completo.</p>
+
+      <h3 style="color: #f59e0b; margin: 2rem 0 1rem;">$push — Agregar Elementos al Arreglo</h3>
+<pre><code style="color:#6a9955"># Agregar un nuevo ítem al arreglo "items" de un pedido</code>
+<code style="color:#d4d4d4">db.pedidos.updateOne(
+  { _id: ObjectId(<code style="color:#ce9178">"507f191e810c19729de860ea"</code>) },
+  { $push: {
+    items: {
+      producto_nombre: <code style="color:#ce9178">"Alfombrilla Gaming"</code>,
+      cantidad:        <code style="color:#b5cea8">1</code>,
+      precio_unitario: <code style="color:#b5cea8">15900</code>
+    }
+  }}
+)</code>
+
+<code style="color:#6a9955"># $each — insertar múltiples elementos en un solo $push</code>
+<code style="color:#d4d4d4">db.estudiantes.updateOne(
+  { _id: ObjectId(<code style="color:#ce9178">"est001"</code>) },
+  { $push: {
+    cursos_inscritos: {
+      $each: [ObjectId(<code style="color:#ce9178">"curso_devops"</code>), ObjectId(<code style="color:#ce9178">"curso_linux"</code>)]
+    }
+  }}
+)</code></pre>
+
+      <h3 style="color: #ef4444; margin: 2rem 0 1rem;">$pull — Eliminar Elementos del Arreglo</h3>
+<pre><code style="color:#6a9955"># Remover un curso específico del arreglo de cursos inscritos</code>
+<code style="color:#d4d4d4">db.estudiantes.updateOne(
+  { _id: ObjectId(<code style="color:#ce9178">"est001"</code>) },
+  { $pull: { cursos_inscritos: ObjectId(<code style="color:#ce9178">"curso_python"</code>) } }
+)</code>
+
+<code style="color:#6a9955"># $pull con condición — remover todos los ítems con precio < 20000</code>
+<code style="color:#d4d4d4">db.pedidos.updateOne(
+  { _id: ObjectId(<code style="color:#ce9178">"507f191e810c19729de860ea"</code>) },
+  { $pull: {
+    items: { precio_unitario: { $lt: <code style="color:#b5cea8">20000</code> } }
+  }}
+)</code></pre>
+
+      <h3 style="color: #34d399; margin: 2rem 0 1rem;">$addToSet — Agregar Sólo si No Existe</h3>
+<pre><code style="color:#6a9955"># Agregar un tag solo si no está duplicado en el arreglo</code>
+<code style="color:#6a9955"># (se comporta como un Set matemático — sin duplicados)</code>
+<code style="color:#d4d4d4">db.articulos.updateOne(
+  { _id: ObjectId(<code style="color:#ce9178">"art001"</code>) },
+  { $addToSet: { tags: <code style="color:#ce9178">"mongodb"</code> } }
+)
+<code style="color:#6a9955">// Si "mongodb" ya existe en el arreglo → no hace nada</code>
+<code style="color:#6a9955">// Si no existe → lo agrega. Sin duplicados garantizados.</code></code></pre>
+
+      <h3 style="color: #b08dff; margin: 2rem 0 1rem;">$pop — Remover Primer o Último Elemento</h3>
+<pre><code style="color:#d4d4d4">db.cola_tareas.updateOne(
+  { _id: ObjectId(<code style="color:#ce9178">"cola001"</code>) },
+  { $pop: { tareas: <code style="color:#b5cea8">-1</code> } }  <code style="color:#6a9955">// -1 elimina el primer elemento (FIFO)</code>
+)
+
+db.historial.updateOne(
+  { _id: ObjectId(<code style="color:#ce9178">"hist001"</code>) },
+  { $pop: { eventos: <code style="color:#b5cea8">1</code> } }   <code style="color:#6a9955">// +1 elimina el último elemento (LIFO)</code>
+)</code></pre>
+
+      <h2>El Operador Posicional <code>$</code> — Actualizar un Elemento Encontrado</h2>
+      <p>Cuando necesitas actualizar <strong>el primer elemento de un arreglo que cumple el filtro de la query</strong>, sin conocer su índice numérico, usas el operador posicional <code>$</code>. Funciona como un puntero al elemento que hizo match en el filtro.</p>
+
+<pre><code style="color:#6a9955"># Actualizar la cantidad del ítem "Teclado Mecánico" en el pedido</code>
+<code style="color:#6a9955"># El $ referencia automáticamente el elemento del arreglo que hizo match</code>
+<code style="color:#d4d4d4">db.pedidos.updateOne(
+  {
+    _id:                   ObjectId(<code style="color:#ce9178">"507f191e810c19729de860ea"</code>),
+    <code style="color:#ce9178">"items.producto_nombre"</code>: <code style="color:#ce9178">"Teclado Mecánico"</code>  <code style="color:#6a9955">// Condición que activa el $</code>
+  },
+  {
+    $set: { <code style="color:#ce9178">"items.$.cantidad"</code>: <code style="color:#b5cea8">2</code> }  <code style="color:#6a9955">// $ apunta al ítem que hizo match arriba</code>
+  }
+)</code></pre>
+
+      <p style="background: rgba(52,211,153,0.1); padding: 1.5rem; border-radius: 8px; border-left: 4px solid #34d399;"><strong>Resumen de operadores de arreglos:</strong> <code>$push</code> agrega (con <code>$each</code> para múltiples), <code>$pull</code> elimina por valor o condición, <code>$addToSet</code> agrega sin duplicar, <code>$pop</code> extrae por posición, y el operador posicional <code>$</code> actualiza el elemento que cumplió el filtro. Juntos forman el toolkit completo para manipular arrays de forma atómica en MongoDB.</p>
+
+      <div class="page-nav">
+        <a href="/m3-asociaciones.html" class="nav-btn">← Asociaciones y Subdocumentos</a>
+        <a href="/index.html" class="nav-btn next" style="background: #f59e0b;">Concluir Módulo 03 →</a>
+      </div>
+    </article>
+  </main>
+
+  <footer>
+    <p>© 2026 German Mardones. Todos los derechos reservados.</p>
+  </footer>
+</body>
+</html>

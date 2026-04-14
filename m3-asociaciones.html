@@ -25,7 +25,7 @@
 
       <h2>Las Dos Estrategias Fundamentales</h2>
 
-      <div class="visual-comparison">
+      <div class="visual-comparison" style="grid-template-columns: 1fr;">
         <div class="comparison-side sql">
           <h3>Estrategia 1: Embebido (Embedding)</h3>
           <ul>
@@ -105,7 +105,7 @@
       <h2>Patrón 1:N — Referencia por ObjectId</h2>
       <p>Cuando el documento hijo tiene <strong>vida propia</strong> (se consulta de forma autónoma, se actualiza frecuentemente o pertenece a múltiples padres), se guarda en su propia colección y el padre almacena solo su <code>_id</code>. Este patrón equivale a la clave foránea de SQL.</p>
 
-      <div class="visual-comparison">
+      <div class="visual-comparison" style="grid-template-columns: 1fr;">
         <div class="comparison-side sql">
           <h3>Colección: autores</h3>
 <pre><code style="color:#d4d4d4">db.autores.insertOne({

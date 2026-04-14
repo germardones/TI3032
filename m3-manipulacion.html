@@ -26,7 +26,7 @@
       <h2>Dot Notation — Navegando Estructuras Anidadas</h2>
       <p>La <strong class="tech-tooltip" data-tooltip="Sintaxis especial usando puntos (ej: padre.hijo) para referenciar el camino exacto a campos anidados muy adentro de un subdocumento BSON.">notación de punto</strong> permite referenciar campos de subdocumentos en queries y actualizaciones usando el formato <code>"padre.hijo.nieto"</code>. Es el equivalente al operador <code>.</code> de JavaScript para acceder a propiedades de objetos anidados.</p>
 
-      <div class="visual-comparison">
+      <div class="visual-comparison" style="grid-template-columns: 1fr;">
         <div class="comparison-side sql">
           <h3>Consultar Subdocumentos</h3>
 <pre><code style="color:#6a9955"># Buscar usuarios de Santiago
@@ -78,7 +78,7 @@
       <h2><code>$elemMatch</code> — Condiciones Compuestas en Arreglos</h2>
       <p>Cuando necesitas que <strong>un único elemento</strong> del arreglo cumpla simultáneamente múltiples condiciones, debes usar <code>$elemMatch</code>. Sin él, MongoDB evalúa cada condición por separado contra diferentes elementos del arreglo.</p>
 
-      <div class="visual-comparison">
+      <div class="visual-comparison" style="grid-template-columns: 1fr;">
         <div class="comparison-side sql">
           <h3>Sin $elemMatch (incorrecto)</h3>
 <pre><code style="color:#6a9955"># Busca pedidos donde items tenga

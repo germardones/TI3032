@@ -247,6 +247,60 @@ body[data-theme="light"] .tech-tooltip:hover::after {
   box-shadow: 0 10px 25px rgba(0, 0, 0, 0.1);
 }
 
+body[data-theme="light"] .hero h1 {
+  background: linear-gradient(135deg, #1e293b 0%, #475569 100%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+}
+
+body[data-theme="light"] .btn-sub {
+  color: var(--text-primary);
+  background: rgba(0, 0, 0, 0.03);
+  border-color: rgba(0, 0, 0, 0.1);
+}
+body[data-theme="light"] .btn-sub:hover {
+  background: rgba(99, 102, 241, 0.08);
+  border-color: rgba(99, 102, 241, 0.35);
+}
+body[data-theme="light"] .btn-sub span {
+  color: var(--accent-color);
+}
+
+body[data-theme="light"] .back-link:hover {
+  color: var(--accent-color);
+}
+
+body[data-theme="light"] .nav-btn {
+  background: rgba(0, 0, 0, 0.04);
+}
+body[data-theme="light"] .nav-btn:hover {
+  background: rgba(99, 102, 241, 0.1);
+  border-color: rgba(99, 102, 241, 0.4);
+}
+
+body[data-theme="light"] .cap-node {
+  background: rgba(30, 41, 59, 0.85);
+}
+
+body[data-theme="light"] .scale-box h3 {
+  color: #1e293b !important;
+}
+body[data-theme="light"] .scale-box {
+  background: rgba(255, 255, 255, 0.8) !important;
+  border-color: rgba(0, 0, 0, 0.1) !important;
+}
+
+body[data-theme="light"] .form-input,
+body[data-theme="light"] .form-textarea,
+body[data-theme="light"] .form-select {
+  background: rgba(255, 255, 255, 0.8);
+  border-color: rgba(0, 0, 0, 0.15);
+}
+
+body[data-theme="light"] .required-badge {
+  color: var(--accent-color);
+}
+
 /* Suggestion Box Form */
 .suggestion-form {
   display: flex;

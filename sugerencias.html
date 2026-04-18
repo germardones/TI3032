@@ -54,8 +54,7 @@
     .header-title { font-family: var(--head); font-size: 0.95rem; font-weight: 600; }
     .theme-btn { cursor: pointer; font-size: 1.1rem; border: none; background: none; padding: 0.35rem; border-radius: 6px; transition: background 0.2s; }
     .theme-btn:hover { background: var(--border); }
-    main { max-width: 860px; margin: 0 auto; padding: 3rem 1.5rem 5rem; display: grid; grid-template-columns: 1fr 1fr; gap: 2rem; }
-    @media (max-width: 700px) { main { grid-template-columns: 1fr; } }
+    main { max-width: 540px; margin: 0 auto; padding: 3rem 1.5rem 5rem; }
     .card { background: var(--card); border: 1px solid var(--border); backdrop-filter: blur(12px); border-radius: 16px; padding: 2rem; }
     .form-col { display: flex; flex-direction: column; gap: 1.5rem; }
     .form-hero h1 { font-family: var(--head); font-size: 1.7rem; font-weight: 800; line-height: 1.2; }
@@ -82,22 +81,6 @@
     .retry-btn:hover { background: rgba(59,130,246,0.3); }
     .error-txt { color: #f87171; font-size: 0.82rem; display: none; }
     .error-txt.show { display: block; }
-    .feed-col { display: flex; flex-direction: column; gap: 1rem; }
-    .feed-header { display: flex; align-items: center; justify-content: space-between; }
-    .feed-header h2 { font-family: var(--head); font-size: 1rem; font-weight: 700; }
-    .feed-count { font-size: 0.78rem; color: var(--muted); }
-    .feed-list { display: flex; flex-direction: column; gap: 0.7rem; max-height: 520px; overflow-y: auto; padding-right: 0.25rem; }
-    .feed-list::-webkit-scrollbar { width: 4px; }
-    .feed-list::-webkit-scrollbar-thumb { background: var(--border); border-radius: 4px; }
-    .sug-item { background: var(--card); border: 1px solid var(--border); border-radius: 12px; padding: 0.9rem 1rem; font-size: 0.88rem; }
-    .sug-item-meta { display: flex; align-items: center; gap: 0.5rem; margin-bottom: 0.4rem; flex-wrap: wrap; }
-    .sug-item-name { font-weight: 600; }
-    .sug-item-type { font-size: 0.72rem; padding: 0.15rem 0.5rem; border-radius: 4px; background: rgba(59,130,246,0.15); color: #93c5fd; }
-    .sug-item-paralelo { font-size: 0.72rem; color: var(--muted); }
-    .sug-item-msg { color: var(--text); line-height: 1.5; }
-    .sug-item-time { font-size: 0.7rem; color: var(--muted); margin-top: 0.4rem; }
-    .feed-empty { color: var(--muted); font-size: 0.85rem; text-align: center; padding: 2rem 1rem; }
-    .feed-loading { color: var(--muted); font-size: 0.85rem; text-align: center; padding: 1.5rem; }
   </style>
 </head>
 <body>
@@ -125,18 +108,18 @@
                 <input type="text" id="nombre" placeholder="Tu nombre" required maxlength="60">
               </div>
               <div class="form-group">
-                <label for="paralelo">Paralelo</label>
-                <input type="text" id="paralelo" placeholder="Ej: A, B, C" maxlength="10">
+                <label for="seccion">Sección</label>
+                <input type="text" id="seccion" placeholder="Ej: A, B, C" maxlength="10">
               </div>
             </div>
             <div class="form-group">
               <label for="tipo">Tipo de feedback</label>
               <select id="tipo" required>
                 <option value="" disabled selected>Selecciona...</option>
-                <option value="sugerencia">💡 Sugerencia</option>
-                <option value="consulta">❓ Consulta</option>
-                <option value="error">🐛 Reportar un error</option>
-                <option value="felicitacion">🎉 Felicitación</option>
+                <option value="sugerencia">Sugerencia</option>
+                <option value="consulta">Consulta</option>
+                <option value="error">Reportar un error</option>
+                <option value="felicitacion">Felicitación</option>
               </select>
             </div>
             <div class="form-group">
@@ -156,17 +139,6 @@
       </div>
     </div>
 
-    <div class="feed-col">
-      <div class="card" style="flex:1;display:flex;flex-direction:column;gap:1rem;">
-        <div class="feed-header">
-          <h2>💬 Sugerencias del curso</h2>
-          <span class="feed-count" id="feedCount"></span>
-        </div>
-        <div class="feed-list" id="feedList">
-          <div class="feed-loading">Cargando...</div>
-        </div>
-      </div>
-    </div>
   </main>
 
   <script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-app-compat.js"></script>
@@ -187,15 +159,14 @@
     try {
       firebase.initializeApp(firebaseConfig);
       db = firebase.firestore();
-      loadFeed();
     } catch (e) {
-      document.getElementById('feedList').innerHTML = '<div class="feed-empty">Firebase no configurado.</div>';
+      console.error('Firebase no configurado.', e);
     }
 
     document.getElementById('sugForm').addEventListener('submit', async e => {
       e.preventDefault();
       const nombre   = document.getElementById('nombre').value.trim();
-      const paralelo = document.getElementById('paralelo').value.trim();
+      const seccion  = document.getElementById('seccion').value.trim();
       const tipo     = document.getElementById('tipo').value;
       const mensaje  = document.getElementById('mensaje').value.trim();
       const errorEl  = document.getElementById('errorTxt');
@@ -204,7 +175,7 @@
       const btn = document.getElementById('submitBtn');
       btn.disabled = true; btn.textContent = 'Enviando...';
       try {
-        await db.collection('sugerencias').add({ curso: CURSO, nombre, paralelo: paralelo || null, tipo, mensaje, leida: false, timestamp: firebase.firestore.FieldValue.serverTimestamp() });
+        await db.collection('sugerencias').add({ curso: CURSO, nombre, seccion: seccion || null, tipo, mensaje, leida: false, timestamp: firebase.firestore.FieldValue.serverTimestamp() });
         document.getElementById('sugForm').style.display = 'none';
         document.getElementById('successMsg').classList.add('show');
       } catch {
@@ -221,36 +192,6 @@
       document.getElementById('submitBtn').disabled = false;
       document.getElementById('submitBtn').textContent = 'Enviar sugerencia →';
     });
-
-    function loadFeed() {
-      db.collection('sugerencias').where('curso','==',CURSO).orderBy('timestamp','desc').onSnapshot(snap => {
-        const items = snap.docs.map(d => d.data());
-        document.getElementById('feedCount').textContent = `${items.length} total`;
-        const list = document.getElementById('feedList');
-        if (!items.length) { list.innerHTML = '<div class="feed-empty">Sé el primero en dejar una sugerencia 🚀</div>'; return; }
-        list.innerHTML = items.map(s => `
-          <div class="sug-item">
-            <div class="sug-item-meta">
-              <span class="sug-item-name">${esc(s.nombre||'Anónimo')}</span>
-              <span class="sug-item-type">${typeLabel(s.tipo)}</span>
-              ${s.paralelo ? `<span class="sug-item-paralelo">Paralelo ${esc(s.paralelo)}</span>` : ''}
-            </div>
-            <div class="sug-item-msg">${esc(s.mensaje||'')}</div>
-            <div class="sug-item-time">${timeAgo(s.timestamp?.toDate?.())}</div>
-          </div>`).join('');
-      });
-    }
-
-    function typeLabel(t) { return {sugerencia:'💡 Sugerencia',consulta:'❓ Consulta',error:'🐛 Error',felicitacion:'🎉 Felicitación'}[t]||t; }
-    function esc(s) { return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;'); }
-    function timeAgo(d) {
-      if (!d) return '';
-      const s = Math.floor((Date.now()-d)/1000);
-      if (s<60) return 'hace un momento';
-      if (s<3600) return `hace ${Math.floor(s/60)} min`;
-      if (s<86400) return `hace ${Math.floor(s/3600)}h`;
-      return d.toLocaleDateString('es-CL');
-    }
 
     const themeBtn = document.getElementById('themeBtn');
     const saved = localStorage.getItem('ti3032-theme') || 'dark';

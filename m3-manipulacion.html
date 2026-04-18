@@ -52,6 +52,10 @@
     "direccion.codigo_postal": "2340000"
   }}
 )</code></pre>
+          <button class="doc-preview-btn" onclick="showDocPreview('set-dot')">
+            <svg width="12" height="12" viewBox="0 0 16 16" fill="currentColor" aria-hidden="true"><path d="M8 3C4.5 3 1.5 5.5 0 8c1.5 2.5 4.5 5 8 5s6.5-2.5 8-5C14.5 5.5 11.5 3 8 3zm0 8a3 3 0 110-6 3 3 0 010 6zm0-5a2 2 0 100 4 2 2 0 000-4z"/></svg>
+            Ver documento antes / después
+          </button>
         </div>
       </div>
 
@@ -130,6 +134,10 @@
     }
   }}
 )</code></pre>
+      <button class="doc-preview-btn" onclick="showDocPreview('push')">
+        <svg width="12" height="12" viewBox="0 0 16 16" fill="currentColor" aria-hidden="true"><path d="M8 3C4.5 3 1.5 5.5 0 8c1.5 2.5 4.5 5 8 5s6.5-2.5 8-5C14.5 5.5 11.5 3 8 3zm0 8a3 3 0 110-6 3 3 0 010 6zm0-5a2 2 0 100 4 2 2 0 000-4z"/></svg>
+        Ver documento antes / después
+      </button>
 
       <h3 style="color: #ef4444; margin: 2rem 0 1rem;">$pull — Eliminar Elementos del Arreglo</h3>
 <pre><code style="color:#6a9955"># Remover un curso específico del arreglo de cursos inscritos</code>
@@ -145,6 +153,10 @@
     items: { precio_unitario: { $lt: 20000 } }
   }}
 )</code></pre>
+      <button class="doc-preview-btn" onclick="showDocPreview('pull')">
+        <svg width="12" height="12" viewBox="0 0 16 16" fill="currentColor" aria-hidden="true"><path d="M8 3C4.5 3 1.5 5.5 0 8c1.5 2.5 4.5 5 8 5s6.5-2.5 8-5C14.5 5.5 11.5 3 8 3zm0 8a3 3 0 110-6 3 3 0 010 6zm0-5a2 2 0 100 4 2 2 0 000-4z"/></svg>
+        Ver documento antes / después
+      </button>
 
       <h3 style="color: #34d399; margin: 2rem 0 1rem;">$addToSet — Agregar Solo si No Existe</h3>
 <pre><code style="color:#6a9955"># Agregar un tag solo si no está duplicado en el arreglo
@@ -155,6 +167,10 @@
 )</code>
 <code style="color:#6a9955">// Si "mongodb" ya existe en el arreglo → no hace nada
 // Si no existe → lo agrega. Sin duplicados garantizados.</code></pre>
+      <button class="doc-preview-btn" onclick="showDocPreview('addToSet')">
+        <svg width="12" height="12" viewBox="0 0 16 16" fill="currentColor" aria-hidden="true"><path d="M8 3C4.5 3 1.5 5.5 0 8c1.5 2.5 4.5 5 8 5s6.5-2.5 8-5C14.5 5.5 11.5 3 8 3zm0 8a3 3 0 110-6 3 3 0 010 6zm0-5a2 2 0 100 4 2 2 0 000-4z"/></svg>
+        Ver documento antes / después
+      </button>
 
       <h3 style="color: #b08dff; margin: 2rem 0 1rem;">$pop — Remover Primer o Último Elemento</h3>
 <pre><code style="color:#d4d4d4">db.cola_tareas.updateOne(
@@ -166,6 +182,10 @@
   { _id: ObjectId("hist001") },
   { $pop: { eventos: 1 } }   </code><code style="color:#6a9955">// +1 elimina el último elemento (LIFO)</code>
 <code style="color:#d4d4d4">)</code></pre>
+      <button class="doc-preview-btn" onclick="showDocPreview('pop')">
+        <svg width="12" height="12" viewBox="0 0 16 16" fill="currentColor" aria-hidden="true"><path d="M8 3C4.5 3 1.5 5.5 0 8c1.5 2.5 4.5 5 8 5s6.5-2.5 8-5C14.5 5.5 11.5 3 8 3zm0 8a3 3 0 110-6 3 3 0 010 6zm0-5a2 2 0 100 4 2 2 0 000-4z"/></svg>
+        Ver documento antes / después
+      </button>
 
       <h2>El Operador Posicional <code>$</code> — Actualizar el Elemento Encontrado</h2>
       <p>Cuando necesitas actualizar <strong>el primer elemento de un arreglo que cumple el filtro de la query</strong>, sin conocer su índice numérico, usas el operador posicional <code>$</code>. Funciona como un puntero automático al elemento que hizo match en el filtro.</p>
@@ -181,8 +201,33 @@
     $set: { "items.$.cantidad": 2 }  </code><code style="color:#6a9955">// $ apunta al ítem que hizo match arriba</code>
 <code style="color:#d4d4d4">  }
 )</code></pre>
+      <button class="doc-preview-btn" onclick="showDocPreview('positional')">
+        <svg width="12" height="12" viewBox="0 0 16 16" fill="currentColor" aria-hidden="true"><path d="M8 3C4.5 3 1.5 5.5 0 8c1.5 2.5 4.5 5 8 5s6.5-2.5 8-5C14.5 5.5 11.5 3 8 3zm0 8a3 3 0 110-6 3 3 0 010 6zm0-5a2 2 0 100 4 2 2 0 000-4z"/></svg>
+        Ver documento antes / después
+      </button>
 
-      <p style="background: rgba(52,211,153,0.1); padding: 1.5rem; border-radius: 8px; border-left: 4px solid #34d399;"><strong>Resumen de operadores de arreglos:</strong> <code>$push</code> agrega (con <code>$each</code> para múltiples), <code>$pull</code> elimina por valor o condición, <code>$addToSet</code> agrega sin duplicar, <code>$pop</code> extrae por posición, y el operador posicional <code>$</code> actualiza el elemento que cumplió el filtro. Juntos forman el toolkit completo para manipular arrays de forma atómica en MongoDB.</p>
+      <p style="background: rgba(52,211,153,0.1); padding: 1.5rem; border-radius: 8px; border-left: 4px solid #34d399; margin-top: 2rem;"><strong>Resumen de operadores de arreglos:</strong> <code>$push</code> agrega (con <code>$each</code> para múltiples), <code>$pull</code> elimina por valor o condición, <code>$addToSet</code> agrega sin duplicar, <code>$pop</code> extrae por posición, y el operador posicional <code>$</code> actualiza el elemento que cumplió el filtro. Juntos forman el toolkit completo para manipular arrays de forma atómica en MongoDB.</p>
+
+      <!-- ── Document Preview Modal ── -->
+      <div id="dp-overlay" class="dp-overlay dp-hidden" role="dialog" aria-modal="true" aria-labelledby="dp-title">
+        <div class="dp-modal" id="dp-modal">
+          <div class="dp-header">
+            <span class="dp-title" id="dp-title"></span>
+            <button class="dp-close" onclick="closeDocPreview()" aria-label="Cerrar">✕</button>
+          </div>
+          <div class="dp-grid">
+            <div class="dp-panel dp-before">
+              <div class="dp-panel-label">Antes</div>
+              <pre><code id="dp-before"></code></pre>
+            </div>
+            <div class="dp-panel dp-after">
+              <div class="dp-panel-label">Después</div>
+              <pre><code id="dp-after"></code></pre>
+            </div>
+          </div>
+          <div id="dp-note" class="dp-note" style="display:none;"></div>
+        </div>
+      </div>
 
       <div class="page-nav">
         <a href="/m3-asociaciones.html" class="nav-btn">← Asociaciones y Subdocumentos</a>
@@ -196,24 +241,247 @@
   </footer>
 
   <script>
+    /* ── Theme ── */
     function toggleTheme() {
       const body = document.body;
       const currentTheme = body.getAttribute('data-theme') || 'dark';
       const newTheme = currentTheme === 'light' ? 'dark' : 'light';
-      if (newTheme === 'dark') {
-          body.removeAttribute('data-theme');
-      } else {
-          body.setAttribute('data-theme', 'light');
-      }
+      if (newTheme === 'dark') { body.removeAttribute('data-theme'); }
+      else { body.setAttribute('data-theme', 'light'); }
       localStorage.setItem('theme', newTheme);
     }
-    
     const savedTheme = localStorage.getItem('theme');
-    if (savedTheme === 'dark') {
-      document.body.removeAttribute('data-theme');
-    } else if (savedTheme === 'light') {
-      document.body.setAttribute('data-theme', 'light');
+    if (savedTheme === 'dark') { document.body.removeAttribute('data-theme'); }
+    else if (savedTheme === 'light') { document.body.setAttribute('data-theme', 'light'); }
+
+    /* ── Document Preview ── */
+    function k(s)   { return `<span class="dj-k">${s}</span>`; }
+    function str(s) { return `<span class="dj-s">"${s}"</span>`; }
+    function num(s) { return `<span class="dj-n">${s}</span>`; }
+    function oid(s) { return `<span class="dj-o">ObjectId("${s}")</span>`; }
+    function add(s) { return `<span class="dj-add">${s}</span>`; }
+    function rem(s) { return `<span class="dj-rem">${s}</span>`; }
+    function ln(...parts) { return parts.join(''); }
+
+    const PREVIEWS = {
+      'set-dot': {
+        title: '$set · Dot Notation — Actualizar subdocumento',
+        before: [
+          '{',
+          `  ${k('_id')}: ${oid('507f1f77bcf86cd799439011')},`,
+          `  ${k('nombre')}: ${str('Valentina Ríos')},`,
+          `  ${k('email')}: ${str('vrios@example.com')},`,
+          `  ${k('direccion')}: {`,
+          `    ${k('calle')}: ${str('Av. Providencia 1234')},`,
+          rem(`    ${k('ciudad')}: ${str('Santiago')},`),
+          `    ${k('region')}: ${str('Metropolitana')},`,
+          rem(`    ${k('codigo_postal')}: ${str('7500000')}`),
+          '  }',
+          '}'
+        ],
+        after: [
+          '{',
+          `  ${k('_id')}: ${oid('507f1f77bcf86cd799439011')},`,
+          `  ${k('nombre')}: ${str('Valentina Ríos')},`,
+          `  ${k('email')}: ${str('vrios@example.com')},`,
+          `  ${k('direccion')}: {`,
+          `    ${k('calle')}: ${str('Av. Providencia 1234')},`,
+          add(`    ${k('ciudad')}: ${str('Valparaíso')},`),
+          `    ${k('region')}: ${str('Metropolitana')},`,
+          add(`    ${k('codigo_postal')}: ${str('2340000')}`),
+          '  }',
+          '}'
+        ]
+      },
+
+      'push': {
+        title: '$push — Agregar elemento al arreglo',
+        before: [
+          '{',
+          `  ${k('_id')}: ${oid('507f191e810c19729de860ea')},`,
+          `  ${k('estado')}: ${str('procesando')},`,
+          `  ${k('total')}: ${num('125900')},`,
+          `  ${k('items')}: [`,
+          '    {',
+          `      ${k('producto_nombre')}: ${str('Teclado Mecánico')},`,
+          `      ${k('cantidad')}: ${num('1')},`,
+          `      ${k('precio_unitario')}: ${num('85000')}`,
+          '    },',
+          '    {',
+          `      ${k('producto_nombre')}: ${str('Mouse Inalámbrico')},`,
+          `      ${k('cantidad')}: ${num('2')},`,
+          `      ${k('precio_unitario')}: ${num('20450')}`,
+          '    }',
+          '  ]',
+          '}'
+        ],
+        after: [
+          '{',
+          `  ${k('_id')}: ${oid('507f191e810c19729de860ea')},`,
+          `  ${k('estado')}: ${str('procesando')},`,
+          `  ${k('total')}: ${num('125900')},`,
+          `  ${k('items')}: [`,
+          '    {',
+          `      ${k('producto_nombre')}: ${str('Teclado Mecánico')},`,
+          `      ${k('cantidad')}: ${num('1')},`,
+          `      ${k('precio_unitario')}: ${num('85000')}`,
+          '    },',
+          '    {',
+          `      ${k('producto_nombre')}: ${str('Mouse Inalámbrico')},`,
+          `      ${k('cantidad')}: ${num('2')},`,
+          `      ${k('precio_unitario')}: ${num('20450')}`,
+          '    },',
+          add('    {'),
+          add(`      ${k('producto_nombre')}: ${str('Alfombrilla Gaming')},`),
+          add(`      ${k('cantidad')}: ${num('1')},`),
+          add(`      ${k('precio_unitario')}: ${num('15900')}`),
+          add('    }'),
+          '  ]',
+          '}'
+        ]
+      },
+
+      'pull': {
+        title: '$pull — Eliminar elemento del arreglo',
+        before: [
+          '{',
+          `  ${k('_id')}: ${oid('est001')},`,
+          `  ${k('nombre')}: ${str('Carlos Fuentes')},`,
+          `  ${k('cursos_inscritos')}: [`,
+          `    ${oid('curso_bd_nosql')},`,
+          rem(`    ${oid('curso_python')},`),
+          `    ${oid('curso_docker')}`,
+          '  ]',
+          '}'
+        ],
+        after: [
+          '{',
+          `  ${k('_id')}: ${oid('est001')},`,
+          `  ${k('nombre')}: ${str('Carlos Fuentes')},`,
+          `  ${k('cursos_inscritos')}: [`,
+          `    ${oid('curso_bd_nosql')},`,
+          `    ${oid('curso_docker')}`,
+          '  ]',
+          '}'
+        ]
+      },
+
+      'addToSet': {
+        title: '$addToSet — Agregar sin duplicar',
+        before: [
+          '{',
+          `  ${k('_id')}: ${oid('art001')},`,
+          `  ${k('titulo')}: ${str('Intro a MongoDB')},`,
+          `  ${k('tags')}: [`,
+          `    ${str('javascript')},`,
+          `    ${str('node')}`,
+          '  ]',
+          '}'
+        ],
+        after: [
+          '{',
+          `  ${k('_id')}: ${oid('art001')},`,
+          `  ${k('titulo')}: ${str('Intro a MongoDB')},`,
+          `  ${k('tags')}: [`,
+          `    ${str('javascript')},`,
+          `    ${str('node')},`,
+          add(`    ${str('mongodb')}`),
+          '  ]',
+          '}'
+        ],
+        note: '<strong>Si "mongodb" ya existiera en el arreglo</strong>, $addToSet no haría ningún cambio — el documento quedaría idéntico al estado "Antes".'
+      },
+
+      'pop': {
+        title: '$pop · -1 — Eliminar primer elemento (FIFO)',
+        before: [
+          '{',
+          `  ${k('_id')}: ${oid('cola001')},`,
+          `  ${k('tareas')}: [`,
+          rem(`    ${str('revisar PR')},`),
+          `    ${str('actualizar docs')},`,
+          `    ${str('deploy staging')}`,
+          '  ]',
+          '}'
+        ],
+        after: [
+          '{',
+          `  ${k('_id')}: ${oid('cola001')},`,
+          `  ${k('tareas')}: [`,
+          `    ${str('actualizar docs')},`,
+          `    ${str('deploy staging')}`,
+          '  ]',
+          '}'
+        ],
+        note: 'Con <strong>$pop: 1</strong> (valor positivo) se eliminaría el último elemento en su lugar: <code>"deploy staging"</code>.'
+      },
+
+      'positional': {
+        title: 'Operador $ — Actualizar elemento que hizo match',
+        before: [
+          '{',
+          `  ${k('_id')}: ${oid('507f191e810c19729de860ea')},`,
+          `  ${k('items')}: [`,
+          '    {',
+          `      ${k('producto_nombre')}: ${str('Teclado Mecánico')},`,
+          rem(`      ${k('cantidad')}: ${num('1')},`),
+          `      ${k('precio_unitario')}: ${num('85000')}`,
+          '    },',
+          '    {',
+          `      ${k('producto_nombre')}: ${str('Mouse Inalámbrico')},`,
+          `      ${k('cantidad')}: ${num('2')},`,
+          `      ${k('precio_unitario')}: ${num('20450')}`,
+          '    }',
+          '  ]',
+          '}'
+        ],
+        after: [
+          '{',
+          `  ${k('_id')}: ${oid('507f191e810c19729de860ea')},`,
+          `  ${k('items')}: [`,
+          '    {',
+          `      ${k('producto_nombre')}: ${str('Teclado Mecánico')},`,
+          add(`      ${k('cantidad')}: ${num('2')},`),
+          `      ${k('precio_unitario')}: ${num('85000')}`,
+          '    },',
+          '    {',
+          `      ${k('producto_nombre')}: ${str('Mouse Inalámbrico')},`,
+          `      ${k('cantidad')}: ${num('2')},`,
+          `      ${k('precio_unitario')}: ${num('20450')}`,
+          '    }',
+          '  ]',
+          '}'
+        ],
+        note: 'El operador <strong>$</strong> solo actualiza el <em>primer</em> elemento que cumple el filtro. Para actualizar <em>todos</em> los matches se usa <code>$[]</code> o <code>$[&lt;identifier&gt;]</code>.'
+      }
+    };
+
+    function showDocPreview(id) {
+      const p = PREVIEWS[id];
+      if (!p) return;
+      document.getElementById('dp-title').innerHTML = p.title;
+      document.getElementById('dp-before').innerHTML = p.before.join('\n');
+      document.getElementById('dp-after').innerHTML  = p.after.join('\n');
+      const noteEl = document.getElementById('dp-note');
+      if (p.note) { noteEl.innerHTML = p.note; noteEl.style.display = 'block'; }
+      else { noteEl.style.display = 'none'; }
+      const overlay = document.getElementById('dp-overlay');
+      overlay.classList.remove('dp-hidden');
+      document.body.style.overflow = 'hidden';
     }
+
+    function closeDocPreview() {
+      document.getElementById('dp-overlay').classList.add('dp-hidden');
+      document.body.style.overflow = '';
+    }
+
+    document.getElementById('dp-overlay').addEventListener('click', function(e) {
+      if (e.target === this) closeDocPreview();
+    });
+
+    document.addEventListener('keydown', function(e) {
+      if (e.key === 'Escape') closeDocPreview();
+    });
   </script>
 </body>
 </html>

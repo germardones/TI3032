@@ -82,21 +82,322 @@
         </li>
       </ul>
 
-      <h3 style="margin-top: 2rem; color: #fff;">Tipos de Datos Principales en BSON</h3>
-      <p>Gracias a BSON, MongoDB puede diferenciar y operar nativamente con una rica gama de tipos, extendiendo los de JSON básico:</p>
-      <div class="visual-comparison" style="margin-top: 1.5rem; margin-bottom: 3rem; grid-template-columns: 1fr;">
-        <div class="comparison-side nosql" style="background: rgba(25, 28, 35, 0.9);">
-          <ul>
-            <li><strong>String:</strong> Cadena de texto estándar (UTF-8).</li>
-            <li><strong>Integer (32/64 bit):</strong> Números enteros.</li>
-            <li><strong>Double / Decimal128:</strong> Números de punto flotante o alta precisión para finanzas.</li>
-            <li><strong>Boolean:</strong> <code>true</code> o <code>false</code>.</li>
-            <li><strong>Date:</strong> Guarda la fecha estricta en milisegundos (UNIX epoch) sin depender de formatos string (ISODate).</li>
-            <li><strong>ObjectId:</strong> Identificador único criptográfico de 12 bytes asignado automáticamente al campo <code>_id</code>.</li>
-            <li><strong>Array & Object:</strong> Listas ordenadas o subdocumentos embebidos.</li>
-            <li><strong>Null:</strong> Ausencia explícita de valor.</li>
-          </ul>
+      <h3 style="margin-top: 2rem; color: #fff;">Tipos de Datos en BSON</h3>
+      <p>Gracias a BSON, MongoDB puede diferenciar y operar nativamente con una rica gama de tipos, extendiendo los de JSON básico. A continuación se presentan todos los tipos disponibles con ejemplos de uso:</p>
+
+      <style>
+        .bson-grid {
+          display: grid;
+          grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
+          gap: 1.25rem;
+          margin: 1.5rem 0 3rem;
+        }
+        .bson-card {
+          background: rgba(25, 28, 35, 0.92);
+          border: 1px solid rgba(123, 66, 255, 0.25);
+          border-radius: 12px;
+          padding: 1.2rem 1.4rem;
+          display: flex;
+          flex-direction: column;
+          gap: 0.6rem;
+        }
+        .bson-card-header {
+          display: flex;
+          align-items: center;
+          gap: 0.7rem;
+        }
+        .bson-tag {
+          font-size: 0.72rem;
+          font-weight: 700;
+          letter-spacing: 0.05em;
+          padding: 0.18rem 0.6rem;
+          border-radius: 50px;
+          background: rgba(123, 66, 255, 0.18);
+          color: #b08dff;
+          border: 1px solid rgba(123, 66, 255, 0.3);
+          white-space: nowrap;
+        }
+        .bson-card h4 {
+          margin: 0;
+          font-size: 1rem;
+          font-weight: 700;
+          color: #e8e8f0;
+        }
+        .bson-card p {
+          margin: 0;
+          font-size: 0.88rem;
+          color: var(--text-secondary);
+          line-height: 1.55;
+        }
+        .bson-card pre {
+          margin: 0;
+          background: rgba(0,0,0,0.35);
+          border-radius: 8px;
+          padding: 0.75rem 1rem;
+          font-size: 0.8rem;
+          overflow-x: auto;
+          line-height: 1.6;
+          border: 1px solid rgba(255,255,255,0.06);
+        }
+        .bson-note {
+          font-size: 0.78rem;
+          color: #7dd3b0;
+          background: rgba(125, 211, 176, 0.08);
+          border: 1px solid rgba(125, 211, 176, 0.2);
+          border-radius: 6px;
+          padding: 0.45rem 0.8rem;
+          margin: 0;
+        }
+        .bson-card.date-card {
+          border-color: rgba(56, 189, 248, 0.35);
+          grid-column: 1 / -1;
+        }
+        .bson-card.date-card .bson-tag {
+          background: rgba(56, 189, 248, 0.15);
+          color: #7dd3f8;
+          border-color: rgba(56, 189, 248, 0.3);
+        }
+      </style>
+
+      <div class="bson-grid">
+
+        <!-- String -->
+        <div class="bson-card">
+          <div class="bson-card-header">
+            <span class="bson-tag">String</span>
+            <h4>Cadena de Texto</h4>
+          </div>
+          <p>Almacena texto en codificación UTF-8. Es el tipo más común: nombres, descripciones, correos, estados.</p>
+          <pre><code style="color:#9cdcfe">"nombre"</code>: <code style="color:#ce9178">"Ana Rodríguez"</code>,
+<code style="color:#9cdcfe">"email"</code>:  <code style="color:#ce9178">"ana@inacap.cl"</code>,
+<code style="color:#9cdcfe">"estado"</code>: <code style="color:#ce9178">"activo"</code></pre>
+          <p class="bson-note">En $jsonSchema usa <code>bsonType: "string"</code></p>
         </div>
+
+        <!-- Int32 -->
+        <div class="bson-card">
+          <div class="bson-card-header">
+            <span class="bson-tag">Int32</span>
+            <h4>Entero de 32 bits</h4>
+          </div>
+          <p>Número entero entre −2 147 483 648 y 2 147 483 647. Ideal para contadores, edades y cantidades moderadas.</p>
+          <pre><code style="color:#9cdcfe">"edad"</code>:     <code style="color:#b5cea8">28</code>,
+<code style="color:#9cdcfe">"intentos"</code>: <code style="color:#b5cea8">3</code>,
+<code style="color:#9cdcfe">"stock"</code>:    <code style="color:#b5cea8">150</code></pre>
+          <p class="bson-note">En $jsonSchema usa <code>bsonType: "int"</code></p>
+        </div>
+
+        <!-- Int64 / Long -->
+        <div class="bson-card">
+          <div class="bson-card-header">
+            <span class="bson-tag">Int64 / Long</span>
+            <h4>Entero de 64 bits</h4>
+          </div>
+          <p>Para valores enteros muy grandes (hasta ±9.2 × 10¹⁸). Usado en IDs numéricos externos, timestamps Unix o contadores de alta escala.</p>
+          <pre><code style="color:#9cdcfe">"visitas_totales"</code>: <code style="color:#4ec9b0">NumberLong</code>(<code style="color:#b5cea8">"5200000000"</code>),
+<code style="color:#9cdcfe">"id_externo"</code>:     <code style="color:#4ec9b0">NumberLong</code>(<code style="color:#b5cea8">"9007199254740993"</code>)</pre>
+          <p class="bson-note">En $jsonSchema usa <code>bsonType: "long"</code></p>
+        </div>
+
+        <!-- Double -->
+        <div class="bson-card">
+          <div class="bson-card-header">
+            <span class="bson-tag">Double</span>
+            <h4>Número de Punto Flotante</h4>
+          </div>
+          <p>Número real de 64 bits (IEEE 754). Útil para porcentajes, coordenadas GPS y métricas. Puede acumular error de redondeo en cálculos financieros.</p>
+          <pre><code style="color:#9cdcfe">"latitud"</code>:   <code style="color:#b5cea8">-33.4489</code>,
+<code style="color:#9cdcfe">"longitud"</code>:  <code style="color:#b5cea8">-70.6693</code>,
+<code style="color:#9cdcfe">"promedio"</code>:  <code style="color:#b5cea8">6.75</code></pre>
+          <p class="bson-note">En $jsonSchema usa <code>bsonType: "double"</code></p>
+        </div>
+
+        <!-- Decimal128 -->
+        <div class="bson-card">
+          <div class="bson-card-header">
+            <span class="bson-tag">Decimal128</span>
+            <h4>Decimal de Alta Precisión</h4>
+          </div>
+          <p>128 bits de precisión decimal. Obligatorio en aplicaciones financieras, contables o científicas donde el error de redondeo de Double es inaceptable.</p>
+          <pre><code style="color:#9cdcfe">"precio"</code>:   <code style="color:#4ec9b0">NumberDecimal</code>(<code style="color:#ce9178">"19990.50"</code>),
+<code style="color:#9cdcfe">"descuento"</code>: <code style="color:#4ec9b0">NumberDecimal</code>(<code style="color:#ce9178">"0.125"</code>)</pre>
+          <p class="bson-note">En $jsonSchema usa <code>bsonType: "decimal"</code></p>
+        </div>
+
+        <!-- Boolean -->
+        <div class="bson-card">
+          <div class="bson-card-header">
+            <span class="bson-tag">Boolean</span>
+            <h4>Valor Lógico</h4>
+          </div>
+          <p>Solo admite los literales <code>true</code> o <code>false</code>. Se usa para flags, activaciones y estados binarios. No usar strings "true"/"false".</p>
+          <pre><code style="color:#9cdcfe">"activo"</code>:        <code style="color:#569cd6">true</code>,
+<code style="color:#9cdcfe">"email_verificado"</code>: <code style="color:#569cd6">false</code>,
+<code style="color:#9cdcfe">"es_admin"</code>:       <code style="color:#569cd6">true</code></pre>
+          <p class="bson-note">En $jsonSchema usa <code>bsonType: "bool"</code></p>
+        </div>
+
+        <!-- Date — tarjeta ancha con más detalle -->
+        <div class="bson-card date-card">
+          <div class="bson-card-header">
+            <span class="bson-tag">Date</span>
+            <h4>Fecha y Hora (ISODate)</h4>
+          </div>
+          <p>Almacena instantes de tiempo como un entero de 64 bits firmado con los <strong>milisegundos transcurridos desde el Epoch Unix</strong> (1 enero 1970 UTC). No depende de formatos string, por lo que las consultas de rango, ordenamiento y aritmética de fechas son nativas y eficientes.</p>
+          <div style="display:grid; grid-template-columns: 1fr 1fr; gap:1rem; margin-top:0.3rem">
+            <div>
+              <p style="font-size:0.78rem; color:#b08dff; margin:0 0 0.4rem; font-weight:600">INSERTAR fechas</p>
+              <pre><code style="color:#6a9955">// Shell de MongoDB</code>
+<code style="color:#9cdcfe">"creado_en"</code>: <code style="color:#4ec9b0">new Date</code>(),
+<code style="color:#9cdcfe">"nacimiento"</code>: <code style="color:#4ec9b0">ISODate</code>(<code style="color:#ce9178">"2000-06-15"</code>),
+<code style="color:#9cdcfe">"vence_en"</code>: <code style="color:#4ec9b0">ISODate</code>(<code style="color:#ce9178">"2026-12-31T23:59:59Z"</code>)</pre>
+            </div>
+            <div>
+              <p style="font-size:0.78rem; color:#7dd3f8; margin:0 0 0.4rem; font-weight:600">CONSULTAR con rangos</p>
+              <pre><code style="color:#6a9955">// Documentos del último mes</code>
+db.logs.<code style="color:#dcdcaa">find</code>({
+  <code style="color:#9cdcfe">"creado_en"</code>: {
+    <code style="color:#9cdcfe">$gte</code>: <code style="color:#4ec9b0">ISODate</code>(<code style="color:#ce9178">"2026-03-01"</code>),
+    <code style="color:#9cdcfe">$lt</code>:  <code style="color:#4ec9b0">ISODate</code>(<code style="color:#ce9178">"2026-04-01"</code>)
+  }
+})</pre>
+            </div>
+          </div>
+          <div style="display:grid; grid-template-columns: 1fr 1fr; gap:1rem; margin-top:0.3rem">
+            <div>
+              <p style="font-size:0.78rem; color:#fbbf24; margin:0 0 0.4rem; font-weight:600">EXTRAER partes de fecha (aggregation)</p>
+              <pre>{ <code style="color:#9cdcfe">$year</code>:  <code style="color:#ce9178">"$creado_en"</code> }  <code style="color:#6a9955">→ 2026</code>
+{ <code style="color:#9cdcfe">$month</code>: <code style="color:#ce9178">"$creado_en"</code> }  <code style="color:#6a9955">→ 4</code>
+{ <code style="color:#9cdcfe">$dayOfWeek</code>: <code style="color:#ce9178">"$creado_en"</code> } <code style="color:#6a9955">→ 4</code>
+{ <code style="color:#9cdcfe">$hour</code>: <code style="color:#ce9178">"$creado_en"</code> }   <code style="color:#6a9955">→ 14</code></pre>
+            </div>
+            <div>
+              <p style="font-size:0.78rem; color:#f87171; margin:0 0 0.4rem; font-weight:600">ERROR COMÚN a evitar</p>
+              <pre><code style="color:#6a9955">// MAL: string opaco, no ordenable</code>
+<code style="color:#9cdcfe">"fecha"</code>: <code style="color:#ce9178">"2026-04-23"</code>
+
+<code style="color:#6a9955">// BIEN: tipo Date nativo</code>
+<code style="color:#9cdcfe">"fecha"</code>: <code style="color:#4ec9b0">ISODate</code>(<code style="color:#ce9178">"2026-04-23"</code>)</pre>
+            </div>
+          </div>
+          <p class="bson-note">En $jsonSchema usa <code>bsonType: "date"</code> &nbsp;|&nbsp; El motor guarda <code>ISODate("2026-04-23")</code> como el entero <code>1745366400000</code> ms internamente.</p>
+        </div>
+
+        <!-- ObjectId -->
+        <div class="bson-card">
+          <div class="bson-card-header">
+            <span class="bson-tag">ObjectId</span>
+            <h4>Identificador Único</h4>
+          </div>
+          <p>12 bytes: 4 bytes de timestamp + 5 de aleatoriedad del proceso + 3 de contador incremental. Auto-asignado al campo <code>_id</code>. Lleva la fecha de creación embebida.</p>
+          <pre><code style="color:#9cdcfe">"_id"</code>: <code style="color:#4ec9b0">ObjectId</code>(<code style="color:#ce9178">"6625f3a2c4e1d80012ab34cd"</code>)
+
+<code style="color:#6a9955">// Extraer timestamp de creación</code>
+<code style="color:#4ec9b0">ObjectId</code>(<code style="color:#ce9178">"6625f3a2..."</code>).<code style="color:#dcdcaa">getTimestamp</code>()</pre>
+          <p class="bson-note">En $jsonSchema usa <code>bsonType: "objectId"</code></p>
+        </div>
+
+        <!-- Array -->
+        <div class="bson-card">
+          <div class="bson-card-header">
+            <span class="bson-tag">Array</span>
+            <h4>Arreglo Ordenado</h4>
+          </div>
+          <p>Lista de valores del mismo u otro tipo. Permite almacenar múltiples valores en un campo y consultarlos con operadores específicos (<code>$in</code>, <code>$all</code>, <code>$elemMatch</code>).</p>
+          <pre><code style="color:#9cdcfe">"tags"</code>: [<code style="color:#ce9178">"mongodb"</code>, <code style="color:#ce9178">"bson"</code>, <code style="color:#ce9178">"nosql"</code>],
+<code style="color:#9cdcfe">"notas"</code>: [<code style="color:#b5cea8">6.5</code>, <code style="color:#b5cea8">5.8</code>, <code style="color:#b5cea8">6.9</code>],
+<code style="color:#9cdcfe">"historial"</code>: [
+  { <code style="color:#9cdcfe">"accion"</code>: <code style="color:#ce9178">"login"</code>, <code style="color:#9cdcfe">"ok"</code>: <code style="color:#569cd6">true</code> }
+]</pre>
+          <p class="bson-note">En $jsonSchema usa <code>bsonType: "array"</code></p>
+        </div>
+
+        <!-- Object / Subdocument -->
+        <div class="bson-card">
+          <div class="bson-card-header">
+            <span class="bson-tag">Object</span>
+            <h4>Subdocumento Embebido</h4>
+          </div>
+          <p>Un documento anidado con sus propios campos. Se accede mediante <strong>dot notation</strong>. Implementa el patrón de Localidad de Datos sin JOINs.</p>
+          <pre><code style="color:#9cdcfe">"direccion"</code>: {
+  <code style="color:#9cdcfe">"calle"</code>:   <code style="color:#ce9178">"Av. Irarrázaval 1571"</code>,
+  <code style="color:#9cdcfe">"ciudad"</code>:  <code style="color:#ce9178">"Santiago"</code>,
+  <code style="color:#9cdcfe">"comuna"</code>:  <code style="color:#ce9178">"Ñuñoa"</code>
+}
+<code style="color:#6a9955">// Consulta: "direccion.ciudad": "Santiago"</code></pre>
+          <p class="bson-note">En $jsonSchema usa <code>bsonType: "object"</code></p>
+        </div>
+
+        <!-- Null -->
+        <div class="bson-card">
+          <div class="bson-card-header">
+            <span class="bson-tag">Null</span>
+            <h4>Ausencia de Valor</h4>
+          </div>
+          <p>Representa explícitamente la ausencia o indeterminación de un valor. Diferente a omitir el campo: permite consultar documentos donde el campo existe pero no tiene dato.</p>
+          <pre><code style="color:#9cdcfe">"segundo_apellido"</code>: <code style="color:#569cd6">null</code>,
+<code style="color:#9cdcfe">"foto_perfil"</code>:      <code style="color:#569cd6">null</code>
+
+<code style="color:#6a9955">// Buscar campos nulos</code>
+{ <code style="color:#9cdcfe">"foto_perfil"</code>: <code style="color:#569cd6">null</code> }</pre>
+          <p class="bson-note">En $jsonSchema usa <code>bsonType: "null"</code></p>
+        </div>
+
+        <!-- BinData -->
+        <div class="bson-card">
+          <div class="bson-card-header">
+            <span class="bson-tag">BinData</span>
+            <h4>Datos Binarios Crudos</h4>
+          </div>
+          <p>Almacena bytes arbitrarios: imágenes, archivos, hashes criptográficos o UUIDs. Evita el overhead de codificación Base64 que impondría JSON puro.</p>
+          <pre><code style="color:#9cdcfe">"avatar"</code>: <code style="color:#4ec9b0">BinData</code>(<code style="color:#b5cea8">0</code>, <code style="color:#ce9178">"iVBORw0KGgoAAAA..."</code>),
+<code style="color:#9cdcfe">"uuid"</code>:   <code style="color:#4ec9b0">BinData</code>(<code style="color:#b5cea8">4</code>, <code style="color:#ce9178">"ESIziETGeUCblA..."</code>)
+
+<code style="color:#6a9955">// Subtipos comunes: 0=genérico, 4=UUID</code></pre>
+          <p class="bson-note">En $jsonSchema usa <code>bsonType: "binData"</code></p>
+        </div>
+
+        <!-- Timestamp -->
+        <div class="bson-card">
+          <div class="bson-card-header">
+            <span class="bson-tag">Timestamp</span>
+            <h4>Marca de Tiempo Interna</h4>
+          </div>
+          <p>Tipo especial de 64 bits reservado para uso interno del motor de replicación de MongoDB (oplog). <em>No debe usarse para fechas de negocio</em> — para eso existe <strong>Date</strong>.</p>
+          <pre><code style="color:#6a9955">// Aparece en el oplog de réplicas</code>
+<code style="color:#9cdcfe">"ts"</code>: <code style="color:#4ec9b0">Timestamp</code>(<code style="color:#b5cea8">1745366400</code>, <code style="color:#b5cea8">1</code>)
+<code style="color:#6a9955">//            ^epoch-seg  ^ordinal</code></pre>
+          <p class="bson-note">En $jsonSchema usa <code>bsonType: "timestamp"</code></p>
+        </div>
+
+        <!-- Regex -->
+        <div class="bson-card">
+          <div class="bson-card-header">
+            <span class="bson-tag">Regex</span>
+            <h4>Expresión Regular</h4>
+          </div>
+          <p>Almacena un patrón de expresión regular PCRE directamente como tipo nativo. Permite búsquedas de texto flexible con <code>$regex</code>, aunque en colecciones grandes se prefiere un índice de texto completo.</p>
+          <pre><code style="color:#6a9955">// Buscar emails que terminen en .cl</code>
+db.usuarios.<code style="color:#dcdcaa">find</code>({
+  <code style="color:#9cdcfe">"email"</code>: { <code style="color:#9cdcfe">$regex</code>: <code style="color:#ce9178">/\.cl$/i</code> }
+})</pre>
+          <p class="bson-note">En $jsonSchema usa <code>bsonType: "regex"</code></p>
+        </div>
+
+        <!-- MinKey / MaxKey -->
+        <div class="bson-card">
+          <div class="bson-card-header">
+            <span class="bson-tag">MinKey</span>
+            <span class="bson-tag">MaxKey</span>
+            <h4>Claves de Límite</h4>
+          </div>
+          <p>Valores especiales que se comparan como <em>menor que todo</em> (MinKey) o <em>mayor que todo</em> (MaxKey) en el orden de comparación BSON. Usados en fragmentación (sharding) para definir rangos de partición.</p>
+          <pre><code style="color:#6a9955">// Shard chunk boundaries</code>
+{ <code style="color:#9cdcfe">"min"</code>: <code style="color:#4ec9b0">MinKey</code>(), <code style="color:#9cdcfe">"max"</code>: <code style="color:#ce9178">"M"</code> }
+{ <code style="color:#9cdcfe">"min"</code>: <code style="color:#ce9178">"M"</code>,       <code style="color:#9cdcfe">"max"</code>: <code style="color:#4ec9b0">MaxKey</code>() }</pre>
+          <p class="bson-note">Internamente tipo 0xFF (MinKey) y 0x7F (MaxKey)</p>
+        </div>
+
       </div>
 
       <div class="page-nav" style="justify-content: flex-start; gap: 1rem;">

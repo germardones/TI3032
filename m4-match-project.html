@@ -1,0 +1,248 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>$match y $project | Módulo 4 | TI3032</title>
+  <link rel="stylesheet" href="/style.css">
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;800&display=swap" rel="stylesheet">
+  <!-- Google tag (gtag.js) -->
+  <script async src="https://www.googletagmanager.com/gtag/js?id=G-LZ7J61LLCM"></script>
+  <script>
+    window.dataLayer = window.dataLayer || [];
+    function gtag(){dataLayer.push(arguments);}
+    gtag('js', new Date());
+    gtag('config', 'G-LZ7J61LLCM');
+  </script>
+</head>
+<body>
+  <div class="glass-background"></div>
+  <main class="container content-wrapper">
+    <div class="nav-header">
+      <a href="/index.html" class="back-link">← Volver al Menú Principal</a>
+      <div style="display: flex; gap: 1rem; align-items: center;">
+        <button onclick="toggleTheme()" class="nav-btn" style="padding: 0.3rem 0.8rem; font-size: 1.2rem; background: transparent; border: 1px solid var(--card-border); cursor: pointer; border-radius: 50px; color: var(--text-primary); display: flex; align-items: center; justify-content: center; width: 38px; height: 38px; transition: all 0.3s;" aria-label="Cambiar tema">🌓</button>
+        <span class="badge" style="padding: 0.3rem 1rem; border-radius: 50px; background: rgba(6,182,212,0.15); color: #06b6d4; font-size: 0.8rem; font-weight: 600; border: 1px solid rgba(6,182,212,0.3); margin-bottom: 0;">MÓDULO 04</span>
+      </div>
+    </div>
+
+    <article class="page-card">
+      <h1>2. Filtrado y Proyección: <code>$match</code> y <code>$project</code></h1>
+
+      <p>Estas dos etapas son el punto de entrada de casi todo pipeline: <code>$match</code> reduce el volumen de datos al mínimo necesario y <code>$project</code> moldea la forma de cada documento antes de entregarlo a las etapas siguientes.</p>
+
+      <h2><code>$match</code> — Filtrar documentos</h2>
+      <p><code>$match</code> usa exactamente la misma sintaxis de filtros que <code>find()</code>: operadores de comparación, lógicos, regex, <code>$elemMatch</code>, etc. La diferencia es que aquí forma parte de un pipeline encadenado.</p>
+
+<pre><code style="color:#6a9955">// Colección: ventas
+// Objetivo: ventas de 2024 con monto > 500 000</code>
+<code style="color:#d4d4d4">db.ventas.aggregate([
+  {
+    $match: {
+      fecha:  { $gte: new Date("2024-01-01"),
+                $lt:  new Date("2025-01-01") },
+      monto:  { $gt: 500000 },
+      estado: "pagado"
+    }
+  }
+])</code></pre>
+
+      <p style="background: rgba(6,182,212,0.08); padding: 1.2rem; border-radius: 8px; border-left: 4px solid #06b6d4; margin: 1rem 0;"><strong>Rendimiento:</strong> cuando <code>$match</code> es la <em>primera</em> etapa, MongoDB puede usar índices de la colección. Si lo colocas después de <code>$group</code> o <code>$project</code>, ya no hay índice disponible — el motor debe escanear todos los documentos intermedios.</p>
+
+      <h3 style="color: #06b6d4; margin: 2rem 0 1rem;">$match con operadores lógicos</h3>
+<pre><code style="color:#6a9955">// Productos de electrónica O con stock bajo</code>
+<code style="color:#d4d4d4">db.productos.aggregate([
+  {
+    $match: {
+      $or: [
+        { categoria: "electronica" },
+        { stock: { $lt: 10 } }
+      ]
+    }
+  }
+])</code>
+
+<code style="color:#6a9955">// Clientes de Santiago que NO tienen deuda</code>
+<code style="color:#d4d4d4">db.clientes.aggregate([
+  {
+    $match: {
+      ciudad:    "Santiago",
+      deuda:     { $not: { $gt: 0 } }
+    }
+  }
+])</code></pre>
+
+      <h2><code>$project</code> — Dar forma a los documentos</h2>
+      <p><code>$project</code> controla qué campos aparecen en la salida de esa etapa. Con <code>1</code> incluyes, con <code>0</code> excluyes. Además puedes <strong>crear campos nuevos</strong> con expresiones o renombrar existentes.</p>
+
+      <div class="visual-comparison">
+        <div class="comparison-side sql">
+          <h3>Incluir campos (<code>1</code>)</h3>
+<pre><code style="color:#6a9955"># Solo nombre, email y ciudad.
+# _id se incluye por defecto;
+# para excluirlo usa _id: 0</code>
+<code style="color:#d4d4d4">db.clientes.aggregate([
+  {
+    $project: {
+      nombre: 1,
+      email:  1,
+      ciudad: 1,
+      _id:    0
+    }
+  }
+])</code></pre>
+        </div>
+        <div class="comparison-side nosql">
+          <h3>Excluir campos (<code>0</code>)</h3>
+<pre><code style="color:#6a9955"># Todo excepto password y __v
+# No mezcles 0 y 1 (salvo _id)</code>
+<code style="color:#d4d4d4">db.clientes.aggregate([
+  {
+    $project: {
+      password: 0,
+      __v:      0
+    }
+  }
+])</code></pre>
+        </div>
+      </div>
+
+      <h3 style="color: #34d399; margin: 2rem 0 1rem;">Campos calculados con expresiones</h3>
+      <p><code>$project</code> puede crear campos nuevos usando <em class="tech-tooltip" data-tooltip="Expresiones que comienzan con $ dentro del pipeline: calculan valores, transforman strings, aplican aritmética o formatean fechas. Ejemplos: $multiply, $concat, $dateToString.">operadores de expresión</em> del pipeline. Es el equivalente de <code>AS campo_calculado</code> en SQL.</p>
+
+<pre><code style="color:#6a9955">// Calcular precio con IVA y formatear nombre completo</code>
+<code style="color:#d4d4d4">db.productos.aggregate([
+  {
+    $project: {
+      nombre:       1,
+      precio_neto:  "$precio",
+      precio_iva: {
+        $multiply: ["$precio", 1.19]   </code><code style="color:#6a9955">// campo calculado</code>
+<code style="color:#d4d4d4">      },
+      categoria:    { $toUpper: "$categoria" }
+    }
+  }
+])</code>
+
+<code style="color:#6a9955">// Concatenar nombre completo desde dos campos</code>
+<code style="color:#d4d4d4">db.empleados.aggregate([
+  {
+    $project: {
+      nombre_completo: {
+        $concat: ["$nombre", " ", "$apellido"]
+      },
+      anio_ingreso: {
+        $year: "$fecha_ingreso"          </code><code style="color:#6a9955">// extrae el año</code>
+<code style="color:#d4d4d4">      }
+    }
+  }
+])</code></pre>
+
+      <h2>Combinando $match + $project</h2>
+      <p>El patrón más común: primero filtrar para reducir el conjunto, luego proyectar solo los campos necesarios para las etapas siguientes.</p>
+
+<pre><code style="color:#6a9955">// Ventas aprobadas en 2024 → solo cliente, monto y mes</code>
+<code style="color:#d4d4d4">db.ventas.aggregate([
+  {
+    $match: {
+      estado: "aprobado",
+      fecha: { $gte: new Date("2024-01-01") }
+    }
+  },
+  {
+    $project: {
+      _id:      0,
+      cliente:  "$nombre_cliente",
+      monto:    1,
+      mes: {
+        $month: "$fecha"               </code><code style="color:#6a9955">// número de mes (1-12)</code>
+<code style="color:#d4d4d4">      }
+    }
+  }
+])</code>
+
+<code style="color:#6a9955">/* Resultado esperado:
+[
+  { cliente: "Ana López",   monto: 780000, mes: 3 },
+  { cliente: "Juan Pérez",  monto: 540000, mes: 5 },
+  ...
+] */</code></pre>
+
+      <h2>Operadores de expresión más usados en $project</h2>
+      <div style="overflow-x: auto; margin: 1.5rem 0;">
+        <table style="width: 100%; border-collapse: collapse; font-size: 0.88rem;">
+          <thead>
+            <tr>
+              <th style="background: rgba(6,182,212,0.12); color: #06b6d4; padding: 10px 14px; text-align: left; border: 1px solid var(--card-border); font-size: 0.78rem; text-transform: uppercase; letter-spacing: 0.1em;">Operador</th>
+              <th style="background: rgba(6,182,212,0.12); color: #06b6d4; padding: 10px 14px; text-align: left; border: 1px solid var(--card-border); font-size: 0.78rem; text-transform: uppercase; letter-spacing: 0.1em;">Descripción</th>
+              <th style="background: rgba(6,182,212,0.12); color: #06b6d4; padding: 10px 14px; text-align: left; border: 1px solid var(--card-border); font-size: 0.78rem; text-transform: uppercase; letter-spacing: 0.1em;">Ejemplo</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td style="padding: 10px 14px; border: 1px solid var(--card-border); color: #a371f7; font-family: monospace;">$multiply</td>
+              <td style="padding: 10px 14px; border: 1px solid var(--card-border); color: var(--text-secondary);">Multiplica valores</td>
+              <td style="padding: 10px 14px; border: 1px solid var(--card-border); color: var(--text-secondary); font-family: monospace; font-size: 0.82rem;">{ $multiply: ["$precio", 1.19] }</td>
+            </tr>
+            <tr>
+              <td style="padding: 10px 14px; border: 1px solid var(--card-border); color: #a371f7; font-family: monospace;">$add / $subtract</td>
+              <td style="padding: 10px 14px; border: 1px solid var(--card-border); color: var(--text-secondary);">Suma / resta</td>
+              <td style="padding: 10px 14px; border: 1px solid var(--card-border); color: var(--text-secondary); font-family: monospace; font-size: 0.82rem;">{ $subtract: ["$precio", "$descuento"] }</td>
+            </tr>
+            <tr>
+              <td style="padding: 10px 14px; border: 1px solid var(--card-border); color: #a371f7; font-family: monospace;">$concat</td>
+              <td style="padding: 10px 14px; border: 1px solid var(--card-border); color: var(--text-secondary);">Concatena strings</td>
+              <td style="padding: 10px 14px; border: 1px solid var(--card-border); color: var(--text-secondary); font-family: monospace; font-size: 0.82rem;">{ $concat: ["$nombre", " ", "$apellido"] }</td>
+            </tr>
+            <tr>
+              <td style="padding: 10px 14px; border: 1px solid var(--card-border); color: #a371f7; font-family: monospace;">$toUpper / $toLower</td>
+              <td style="padding: 10px 14px; border: 1px solid var(--card-border); color: var(--text-secondary);">Cambia mayúsculas/minúsculas</td>
+              <td style="padding: 10px 14px; border: 1px solid var(--card-border); color: var(--text-secondary); font-family: monospace; font-size: 0.82rem;">{ $toUpper: "$categoria" }</td>
+            </tr>
+            <tr>
+              <td style="padding: 10px 14px; border: 1px solid var(--card-border); color: #a371f7; font-family: monospace;">$year / $month / $dayOfMonth</td>
+              <td style="padding: 10px 14px; border: 1px solid var(--card-border); color: var(--text-secondary);">Extrae partes de una fecha</td>
+              <td style="padding: 10px 14px; border: 1px solid var(--card-border); color: var(--text-secondary); font-family: monospace; font-size: 0.82rem;">{ $year: "$fecha_ingreso" }</td>
+            </tr>
+            <tr>
+              <td style="padding: 10px 14px; border: 1px solid var(--card-border); color: #a371f7; font-family: monospace;">$cond</td>
+              <td style="padding: 10px 14px; border: 1px solid var(--card-border); color: var(--text-secondary);">IF-THEN-ELSE dentro del pipeline</td>
+              <td style="padding: 10px 14px; border: 1px solid var(--card-border); color: var(--text-secondary); font-family: monospace; font-size: 0.82rem;">{ $cond: [{ $gt: ["$stock", 0] }, "disponible", "agotado"] }</td>
+            </tr>
+            <tr>
+              <td style="padding: 10px 14px; border: 1px solid var(--card-border); color: #a371f7; font-family: monospace;">$size</td>
+              <td style="padding: 10px 14px; border: 1px solid var(--card-border); color: var(--text-secondary);">Longitud de un arreglo</td>
+              <td style="padding: 10px 14px; border: 1px solid var(--card-border); color: var(--text-secondary); font-family: monospace; font-size: 0.82rem;">{ $size: "$items" }</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+
+      <p style="background: rgba(52,211,153,0.08); padding: 1.5rem; border-radius: 8px; border-left: 4px solid #34d399;"><strong>Diferencia clave con find():</strong> <code>find()</code> solo puede incluir o excluir campos existentes. <code>$project</code> dentro del pipeline puede <em>crear campos nuevos</em>, aplicar funciones matemáticas, de cadena o de fecha, y renombrar campos — algo imposible con <code>find()</code>.</p>
+
+      <div class="page-nav">
+        <a href="/m4-intro.html" class="nav-btn">← Introducción al Pipeline</a>
+        <a href="/m4-group-unwind.html" class="nav-btn next" style="background: #06b6d4;">$group y $unwind →</a>
+      </div>
+    </article>
+  </main>
+
+  <footer>
+    <p>© 2026 German Mardones. Todos los derechos reservados.</p>
+  </footer>
+
+  <script>
+    function toggleTheme() {
+      const body = document.body;
+      const currentTheme = body.getAttribute('data-theme') || 'dark';
+      const newTheme = currentTheme === 'light' ? 'dark' : 'light';
+      if (newTheme === 'dark') { body.removeAttribute('data-theme'); }
+      else { body.setAttribute('data-theme', 'light'); }
+      localStorage.setItem('theme', newTheme);
+    }
+    const savedTheme = localStorage.getItem('theme');
+    if (savedTheme === 'dark') { document.body.removeAttribute('data-theme'); }
+    else if (savedTheme === 'light') { document.body.setAttribute('data-theme', 'light'); }
+  </script>
+</body>
+</html>

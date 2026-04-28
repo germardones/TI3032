@@ -1,0 +1,215 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>$group y $unwind | Módulo 4 | TI3032</title>
+  <link rel="stylesheet" href="/style.css">
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;800&display=swap" rel="stylesheet">
+  <!-- Google tag (gtag.js) -->
+  <script async src="https://www.googletagmanager.com/gtag/js?id=G-LZ7J61LLCM"></script>
+  <script>
+    window.dataLayer = window.dataLayer || [];
+    function gtag(){dataLayer.push(arguments);}
+    gtag('js', new Date());
+    gtag('config', 'G-LZ7J61LLCM');
+  </script>
+</head>
+<body>
+  <div class="glass-background"></div>
+  <main class="container content-wrapper">
+    <div class="nav-header">
+      <a href="/index.html" class="back-link">← Volver al Menú Principal</a>
+      <div style="display: flex; gap: 1rem; align-items: center;">
+        <button onclick="toggleTheme()" class="nav-btn" style="padding: 0.3rem 0.8rem; font-size: 1.2rem; background: transparent; border: 1px solid var(--card-border); cursor: pointer; border-radius: 50px; color: var(--text-primary); display: flex; align-items: center; justify-content: center; width: 38px; height: 38px; transition: all 0.3s;" aria-label="Cambiar tema">🌓</button>
+        <span class="badge" style="padding: 0.3rem 1rem; border-radius: 50px; background: rgba(6,182,212,0.15); color: #06b6d4; font-size: 0.8rem; font-weight: 600; border: 1px solid rgba(6,182,212,0.3); margin-bottom: 0;">MÓDULO 04</span>
+      </div>
+    </div>
+
+    <article class="page-card">
+      <h1>3. Agrupación y Desanidado: <code>$group</code> y <code>$unwind</code></h1>
+
+      <p>Si <code>$match</code> reduce y <code>$project</code> moldea, <code>$group</code> y <code>$unwind</code> son las etapas que realmente <strong>transforman la estructura de los datos</strong>. Juntas permiten convertir colecciones de documentos complejos en resúmenes analíticos.</p>
+
+      <h2><code>$group</code> — Agrupar y acumular</h2>
+      <p><code>$group</code> es el equivalente de <code>GROUP BY</code> en SQL. Colapsa múltiples documentos en uno por cada valor único del campo <code>_id</code>, aplicando <em class="tech-tooltip" data-tooltip="Operadores que calculan un valor resumen sobre un grupo de documentos: $sum, $avg, $min, $max, $count, $push, $addToSet, $first, $last.">acumuladores</em> para calcular métricas.</p>
+
+<pre><code style="color:#6a9955">// Estructura de $group</code>
+<code style="color:#d4d4d4">{ $group: {
+    _id: &lt;expresión de agrupación&gt;,   </code><code style="color:#6a9955">// campo(s) por los que agrupar</code>
+<code style="color:#d4d4d4">    campo1: { $acumulador1: &lt;expr&gt; },
+    campo2: { $acumulador2: &lt;expr&gt; }
+}}</code></pre>
+
+      <h3 style="color: #06b6d4; margin: 2rem 0 1rem;">Acumuladores principales</h3>
+      <div style="overflow-x: auto; margin-bottom: 1.5rem;">
+        <table style="width: 100%; border-collapse: collapse; font-size: 0.88rem;">
+          <thead>
+            <tr>
+              <th style="background: rgba(167,113,247,0.12); color: #a371f7; padding: 10px 14px; text-align: left; border: 1px solid var(--card-border); font-size: 0.78rem; text-transform: uppercase; letter-spacing: 0.1em;">Acumulador</th>
+              <th style="background: rgba(167,113,247,0.12); color: #a371f7; padding: 10px 14px; text-align: left; border: 1px solid var(--card-border); font-size: 0.78rem; text-transform: uppercase; letter-spacing: 0.1em;">Qué hace</th>
+              <th style="background: rgba(167,113,247,0.12); color: #a371f7; padding: 10px 14px; text-align: left; border: 1px solid var(--card-border); font-size: 0.78rem; text-transform: uppercase; letter-spacing: 0.1em;">Equivalente SQL</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr><td style="padding:9px 14px;border:1px solid var(--card-border);color:#a371f7;font-family:monospace;">$sum</td><td style="padding:9px 14px;border:1px solid var(--card-border);color:var(--text-secondary);">Suma. Con <code>1</code> cuenta documentos.</td><td style="padding:9px 14px;border:1px solid var(--card-border);color:var(--text-secondary);font-family:monospace;">SUM / COUNT</td></tr>
+            <tr><td style="padding:9px 14px;border:1px solid var(--card-border);color:#a371f7;font-family:monospace;">$avg</td><td style="padding:9px 14px;border:1px solid var(--card-border);color:var(--text-secondary);">Promedio del campo</td><td style="padding:9px 14px;border:1px solid var(--card-border);color:var(--text-secondary);font-family:monospace;">AVG</td></tr>
+            <tr><td style="padding:9px 14px;border:1px solid var(--card-border);color:#a371f7;font-family:monospace;">$min / $max</td><td style="padding:9px 14px;border:1px solid var(--card-border);color:var(--text-secondary);">Valor mínimo / máximo</td><td style="padding:9px 14px;border:1px solid var(--card-border);color:var(--text-secondary);font-family:monospace;">MIN / MAX</td></tr>
+            <tr><td style="padding:9px 14px;border:1px solid var(--card-border);color:#a371f7;font-family:monospace;">$push</td><td style="padding:9px 14px;border:1px solid var(--card-border);color:var(--text-secondary);">Acumula valores en un arreglo (con duplicados)</td><td style="padding:9px 14px;border:1px solid var(--card-border);color:var(--text-secondary);">GROUP_CONCAT</td></tr>
+            <tr><td style="padding:9px 14px;border:1px solid var(--card-border);color:#a371f7;font-family:monospace;">$addToSet</td><td style="padding:9px 14px;border:1px solid var(--card-border);color:var(--text-secondary);">Acumula valores únicos (sin duplicados)</td><td style="padding:9px 14px;border:1px solid var(--card-border);color:var(--text-secondary);">DISTINCT</td></tr>
+            <tr><td style="padding:9px 14px;border:1px solid var(--card-border);color:#a371f7;font-family:monospace;">$first / $last</td><td style="padding:9px 14px;border:1px solid var(--card-border);color:var(--text-secondary);">Primer / último valor del grupo</td><td style="padding:9px 14px;border:1px solid var(--card-border);color:var(--text-secondary);">FIRST_VALUE / LAST_VALUE</td></tr>
+            <tr><td style="padding:9px 14px;border:1px solid var(--card-border);color:#a371f7;font-family:monospace;">$count</td><td style="padding:9px 14px;border:1px solid var(--card-border);color:var(--text-secondary);">Cuenta documentos del grupo (desde MongoDB 5.0)</td><td style="padding:9px 14px;border:1px solid var(--card-border);color:var(--text-secondary);font-family:monospace;">COUNT(*)</td></tr>
+          </tbody>
+        </table>
+      </div>
+
+      <h3 style="color: #a371f7; margin: 2rem 0 1rem;">Ejemplos de $group</h3>
+
+<pre><code style="color:#6a9955">// 1. Contar pedidos y sumar ventas por ciudad</code>
+<code style="color:#d4d4d4">db.pedidos.aggregate([
+  {
+    $group: {
+      _id:           "$ciudad",
+      total_pedidos: { $sum: 1 },
+      ingresos:      { $sum: "$monto" },
+      ticket_prom:   { $avg: "$monto" }
+    }
+  }
+])</code>
+
+<code style="color:#6a9955">/* Resultado:
+[
+  { _id: "Santiago",   total_pedidos: 84, ingresos: 12400000, ticket_prom: 147619 },
+  { _id: "Valparaíso", total_pedidos: 31, ingresos:  4200000, ticket_prom: 135483 }
+] */</code>
+
+<code style="color:#6a9955">// 2. Agrupar por múltiples campos (ciudad + mes)</code>
+<code style="color:#d4d4d4">db.pedidos.aggregate([
+  {
+    $group: {
+      _id: {
+        ciudad: "$ciudad",
+        mes:    { $month: "$fecha" }
+      },
+      total: { $sum: "$monto" }
+    }
+  }
+])</code>
+
+<code style="color:#6a9955">// 3. _id: null → agrupa TODO en un solo documento</code>
+<code style="color:#d4d4d4">db.pedidos.aggregate([
+  {
+    $group: {
+      _id:        null,
+      gran_total: { $sum: "$monto" },
+      cantidad:   { $sum: 1 }
+    }
+  }
+])</code></pre>
+
+      <h2><code>$unwind</code> — Desanidar arreglos</h2>
+      <p>Cuando un documento tiene un campo que es un <strong>arreglo</strong>, <code>$unwind</code> lo <em>explota</em>: genera un documento nuevo por cada elemento del arreglo, copiando el resto del documento original. Es indispensable antes de agrupar por elementos de un array.</p>
+
+      <div style="display: flex; gap: 1.5rem; margin: 2rem 0; flex-wrap: wrap;">
+        <div style="flex: 1; min-width: 240px; background: rgba(0,0,0,0.25); border: 1px solid var(--card-border); border-radius: 10px; padding: 1.2rem;">
+          <div style="font-size: 0.72rem; color: #ef4444; font-weight: 700; text-transform: uppercase; letter-spacing: 1px; margin-bottom: 0.8rem;">Antes de $unwind</div>
+<pre style="margin: 0; font-size: 0.8rem;"><code style="color:#d4d4d4">{
+  pedido_id: "P001",
+  cliente:   "Ana",
+  items: [
+    "Teclado",
+    "Mouse",
+    "Monitor"
+  ]
+}
+</code><code style="color:#6a9955">// 1 documento con 3 elementos</code></pre>
+        </div>
+        <div style="display: flex; align-items: center; font-size: 2rem; color: #06b6d4; flex-shrink: 0;">→</div>
+        <div style="flex: 1; min-width: 240px; background: rgba(6,182,212,0.06); border: 1px solid rgba(6,182,212,0.25); border-radius: 10px; padding: 1.2rem;">
+          <div style="font-size: 0.72rem; color: #06b6d4; font-weight: 700; text-transform: uppercase; letter-spacing: 1px; margin-bottom: 0.8rem;">Después de $unwind: "items"</div>
+<pre style="margin: 0; font-size: 0.8rem;"><code style="color:#d4d4d4">{ pedido_id:"P001", cliente:"Ana", items:"Teclado"  }
+{ pedido_id:"P001", cliente:"Ana", items:"Mouse"    }
+{ pedido_id:"P001", cliente:"Ana", items:"Monitor"  }
+</code><code style="color:#6a9955">// 3 documentos — uno por elemento</code></pre>
+        </div>
+      </div>
+
+<pre><code style="color:#6a9955">// Sintaxis básica</code>
+<code style="color:#d4d4d4">db.pedidos.aggregate([
+  { $unwind: "$items" }   </code><code style="color:#6a9955">// el campo debe comenzar con $</code>
+<code style="color:#d4d4d4">])</code>
+
+<code style="color:#6a9955">// Sintaxis extendida — preservar documentos con arreglo vacío o null</code>
+<code style="color:#d4d4d4">db.pedidos.aggregate([
+  {
+    $unwind: {
+      path:                       "$items",
+      preserveNullAndEmptyArrays: true   </code><code style="color:#6a9955">// no elimina docs sin items</code>
+<code style="color:#d4d4d4">    }
+  }
+])</code></pre>
+
+      <h2>El patrón estrella: <code>$unwind</code> + <code>$group</code></h2>
+      <p>El caso de uso más frecuente: tienes un arreglo embebido (items de un pedido, tags de un artículo, recetas de una cita) y quieres obtener estadísticas sobre sus elementos.</p>
+
+<pre><code style="color:#6a9955">// Top 5 productos más vendidos (items embebidos en pedidos)</code>
+<code style="color:#d4d4d4">db.pedidos.aggregate([
+  {
+    $match: { estado: "entregado" }        </code><code style="color:#6a9955">// 1. solo pedidos entregados</code>
+<code style="color:#d4d4d4">  },
+  {
+    $unwind: "$items"                      </code><code style="color:#6a9955">// 2. un doc por cada ítem</code>
+<code style="color:#d4d4d4">  },
+  {
+    $group: {
+      _id:      "$items.nombre_producto",  </code><code style="color:#6a9955">// 3. agrupar por producto</code>
+<code style="color:#d4d4d4">      vendidos: { $sum: "$items.cantidad" },
+      ingresos: { $sum: {
+        $multiply: ["$items.cantidad", "$items.precio_unitario"]
+      }}
+    }
+  },
+  {
+    $sort: { vendidos: -1 }               </code><code style="color:#6a9955">// 4. de mayor a menor</code>
+<code style="color:#d4d4d4">  },
+  {
+    $limit: 5                             </code><code style="color:#6a9955">// 5. solo los 5 primeros</code>
+<code style="color:#d4d4d4">  }
+])</code>
+
+<code style="color:#6a9955">/* Resultado esperado:
+[
+  { _id: "Teclado Mecánico",  vendidos: 234, ingresos: 19890000 },
+  { _id: "Mouse Inalámbrico", vendidos: 198, ingresos:  4059900 },
+  { _id: "Monitor 27\"",      vendidos:  87, ingresos: 43413000 },
+  ...
+] */</code></pre>
+
+      <p style="background: rgba(245,158,11,0.08); padding: 1.5rem; border-radius: 8px; border-left: 4px solid #f59e0b; margin-top: 1.5rem;"><strong>Atención:</strong> <code>$unwind</code> <em>elimina</em> por defecto los documentos cuyo campo de arreglo es <code>null</code>, no existe, o el arreglo está vacío. Si necesitas conservarlos, usa <code>preserveNullAndEmptyArrays: true</code>. Esto es especialmente importante al migrar datos desde SQL donde algunos campos pueden estar vacíos.</p>
+
+      <div class="page-nav">
+        <a href="/m4-match-project.html" class="nav-btn">← $match y $project</a>
+        <a href="/m4-sort-limit.html" class="nav-btn next" style="background: #06b6d4;">$sort, $limit y pipelines completos →</a>
+      </div>
+    </article>
+  </main>
+
+  <footer>
+    <p>© 2026 German Mardones. Todos los derechos reservados.</p>
+  </footer>
+
+  <script>
+    function toggleTheme() {
+      const body = document.body;
+      const currentTheme = body.getAttribute('data-theme') || 'dark';
+      const newTheme = currentTheme === 'light' ? 'dark' : 'light';
+      if (newTheme === 'dark') { body.removeAttribute('data-theme'); }
+      else { body.setAttribute('data-theme', 'light'); }
+      localStorage.setItem('theme', newTheme);
+    }
+    const savedTheme = localStorage.getItem('theme');
+    if (savedTheme === 'dark') { document.body.removeAttribute('data-theme'); }
+    else if (savedTheme === 'light') { document.body.setAttribute('data-theme', 'light'); }
+  </script>
+</body>
+</html>

@@ -1,0 +1,273 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>$sort, $limit y Pipelines Completos | Módulo 4 | TI3032</title>
+  <link rel="stylesheet" href="/style.css">
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;800&display=swap" rel="stylesheet">
+  <!-- Google tag (gtag.js) -->
+  <script async src="https://www.googletagmanager.com/gtag/js?id=G-LZ7J61LLCM"></script>
+  <script>
+    window.dataLayer = window.dataLayer || [];
+    function gtag(){dataLayer.push(arguments);}
+    gtag('js', new Date());
+    gtag('config', 'G-LZ7J61LLCM');
+  </script>
+</head>
+<body>
+  <div class="glass-background"></div>
+  <main class="container content-wrapper">
+    <div class="nav-header">
+      <a href="/index.html" class="back-link">← Volver al Menú Principal</a>
+      <div style="display: flex; gap: 1rem; align-items: center;">
+        <button onclick="toggleTheme()" class="nav-btn" style="padding: 0.3rem 0.8rem; font-size: 1.2rem; background: transparent; border: 1px solid var(--card-border); cursor: pointer; border-radius: 50px; color: var(--text-primary); display: flex; align-items: center; justify-content: center; width: 38px; height: 38px; transition: all 0.3s;" aria-label="Cambiar tema">🌓</button>
+        <span class="badge" style="padding: 0.3rem 1rem; border-radius: 50px; background: rgba(6,182,212,0.15); color: #06b6d4; font-size: 0.8rem; font-weight: 600; border: 1px solid rgba(6,182,212,0.3); margin-bottom: 0;">MÓDULO 04</span>
+      </div>
+    </div>
+
+    <article class="page-card">
+      <h1>4. <code>$sort</code>, <code>$limit</code> y Pipelines Completos</h1>
+
+      <p>Las etapas <code>$sort</code>, <code>$limit</code> y <code>$skip</code> son las herramientas de <strong>presentación</strong> del pipeline: ordenan, recortan y paginan los resultados. En esta sección también veremos cómo combinar todas las etapas aprendidas para construir <strong>pipelines analíticos reales</strong>.</p>
+
+      <h2><code>$sort</code> — Ordenar resultados</h2>
+      <p>Funciona igual que el <code>.sort()</code> de <code>find()</code>: <code>1</code> = ascendente, <code>-1</code> = descendente. Puede ordenar por múltiples campos.</p>
+
+<pre><code style="color:#6a9955">// Ordenar por un campo</code>
+<code style="color:#d4d4d4">db.productos.aggregate([
+  { $sort: { precio: -1 } }          </code><code style="color:#6a9955">// de mayor a menor precio</code>
+<code style="color:#d4d4d4">])</code>
+
+<code style="color:#6a9955">// Ordenar por múltiples campos</code>
+<code style="color:#d4d4d4">db.empleados.aggregate([
+  {
+    $sort: {
+      departamento: 1,               </code><code style="color:#6a9955">// primero por depto (A→Z)</code>
+<code style="color:#d4d4d4">      salario:      -1               </code><code style="color:#6a9955">// luego por salario (mayor→menor)</code>
+<code style="color:#d4d4d4">    }
+  }
+])</code>
+
+<code style="color:#6a9955">// $sort después de $group (campo calculado)</code>
+<code style="color:#d4d4d4">db.ventas.aggregate([
+  {
+    $group: {
+      _id:   "$region",
+      total: { $sum: "$monto" }
+    }
+  },
+  { $sort: { total: -1 } }           </code><code style="color:#6a9955">// ranking de regiones</code>
+<code style="color:#d4d4d4">])</code></pre>
+
+      <p style="background: rgba(6,182,212,0.08); padding: 1.2rem; border-radius: 8px; border-left: 4px solid #06b6d4;"><strong>Rendimiento:</strong> si <code>$sort</code> es la primera etapa y el campo tiene índice, MongoDB usa el índice para ordenar sin cargar los documentos en memoria. Después de <code>$group</code> no hay índice disponible — el motor ordena en memoria, lo cual puede ser costoso con millones de grupos.</p>
+
+      <h2><code>$limit</code> y <code>$skip</code> — Recortar y paginar</h2>
+
+      <div class="visual-comparison">
+        <div class="comparison-side sql">
+          <h3><code>$limit</code> — Top N</h3>
+<pre><code style="color:#6a9955"># Equivale a LIMIT en SQL.
+# Detiene el pipeline después
+# de N documentos.</code>
+<code style="color:#d4d4d4">db.productos.aggregate([
+  { $sort:  { ventas: -1 } },
+  { $limit: 10 }             </code><code style="color:#6a9955">// top 10</code>
+<code style="color:#d4d4d4">])</code></pre>
+        </div>
+        <div class="comparison-side nosql">
+          <h3><code>$skip</code> — Paginación</h3>
+<pre><code style="color:#6a9955"># Salta los primeros N documentos.
+# $sort → $skip → $limit = página.</code>
+<code style="color:#d4d4d4">db.productos.aggregate([
+  { $sort:  { nombre: 1 } },
+  { $skip:  20 },            </code><code style="color:#6a9955">// página 3</code>
+<code style="color:#d4d4d4">  { $limit: 10 }             </code><code style="color:#6a9955">// tamaño 10</code>
+<code style="color:#d4d4d4">])</code></pre>
+        </div>
+      </div>
+
+      <h2>Etapa adicional: <code>$count</code></h2>
+      <p>Reemplaza todos los documentos de la etapa anterior por un único documento con el conteo total. Útil al final de un pipeline de filtrado.</p>
+
+<pre><code style="color:#6a9955">// Cuántos pedidos superan los $200 000</code>
+<code style="color:#d4d4d4">db.pedidos.aggregate([
+  { $match:  { monto: { $gt: 200000 } } },
+  { $count:  "pedidos_grandes" }
+])</code>
+<code style="color:#6a9955">// Resultado: [ { pedidos_grandes: 47 } ]</code></pre>
+
+      <h2>Pipelines completos — Casos reales</h2>
+      <p>Ahora combinamos todo lo aprendido. Estos tres pipelines son exactamente el tipo de análisis que se pide en el mini proyecto.</p>
+
+      <h3 style="color: #a371f7; margin: 2rem 0 1rem;">Pipeline 1 — Ranking de médicos por especialidad</h3>
+<pre><code style="color:#6a9955">// Colección: citas (con médico embebido o referenciado)
+// Objetivo: cantidad de citas realizadas por especialidad</code>
+<code style="color:#d4d4d4">db.citas.aggregate([
+  {
+    $match: { estado: "REALIZADA" }          </code><code style="color:#6a9955">// solo citas completadas</code>
+<code style="color:#d4d4d4">  },
+  {
+    $group: {
+      _id: {
+        especialidad: "$medico.especialidad",
+        medico:       "$medico.nombre"
+      },
+      total_citas: { $sum: 1 }
+    }
+  },
+  {
+    $sort: { total_citas: -1 }               </code><code style="color:#6a9955">// de mayor a menor</code>
+<code style="color:#d4d4d4">  },
+  {
+    $project: {
+      _id:         0,
+      especialidad: "$_id.especialidad",
+      medico:       "$_id.medico",
+      total_citas:  1
+    }
+  }
+])</code></pre>
+
+      <h3 style="color: #34d399; margin: 2rem 0 1rem;">Pipeline 2 — Top 5 medicamentos más recetados</h3>
+<pre><code style="color:#6a9955">// Colección: citas (con recetas embebidas en cada cita)
+// Cada cita tiene un arreglo "recetas" con subdocumentos</code>
+<code style="color:#d4d4d4">db.citas.aggregate([
+  {
+    $match: { estado: "REALIZADA" }
+  },
+  {
+    $unwind: "$recetas"                      </code><code style="color:#6a9955">// un doc por cada receta</code>
+<code style="color:#d4d4d4">  },
+  {
+    $group: {
+      _id:   "$recetas.medicamento",
+      veces: { $sum: 1 },
+      duracion_promedio: { $avg: "$recetas.duracion_dias" }
+    }
+  },
+  {
+    $sort: { veces: -1 }
+  },
+  {
+    $limit: 5                                </code><code style="color:#6a9955">// solo los 5 primeros</code>
+<code style="color:#d4d4d4">  },
+  {
+    $project: {
+      _id:              0,
+      medicamento:      "$_id",
+      veces_recetado:   "$veces",
+      duracion_prom_dias: { $round: ["$duracion_promedio", 1] }
+    }
+  }
+])</code>
+
+<code style="color:#6a9955">/* Resultado esperado:
+[
+  { medicamento: "Ibuprofeno 400mg",   veces_recetado: 38, duracion_prom_dias: 7.2 },
+  { medicamento: "Amoxicilina 500mg",  veces_recetado: 29, duracion_prom_dias: 10.0 },
+  { medicamento: "Paracetamol 500mg",  veces_recetado: 27, duracion_prom_dias: 5.5 },
+  ...
+] */</code></pre>
+
+      <h3 style="color: #f59e0b; margin: 2rem 0 1rem;">Pipeline 3 — Carga mensual de citas</h3>
+<pre><code style="color:#6a9955">// Objetivo: número de citas agrupadas por mes y año</code>
+<code style="color:#d4d4d4">db.citas.aggregate([
+  {
+    $group: {
+      _id: {
+        anio: { $year:  "$fecha" },
+        mes:  { $month: "$fecha" }
+      },
+      total_citas:     { $sum: 1 },
+      citas_realizadas: {
+        $sum: { $cond: [{ $eq: ["$estado", "REALIZADA"] }, 1, 0] }
+      },
+      citas_canceladas: {
+        $sum: { $cond: [{ $eq: ["$estado", "CANCELADA"] }, 1, 0] }
+      }
+    }
+  },
+  {
+    $sort: {
+      "_id.anio": 1,
+      "_id.mes":  1
+    }
+  },
+  {
+    $project: {
+      _id:              0,
+      periodo:          { $concat: [
+        { $toString: "$_id.anio" }, "-",
+        { $toString: "$_id.mes"  }
+      ]},
+      total_citas:      1,
+      citas_realizadas: 1,
+      citas_canceladas: 1
+    }
+  }
+])</code>
+
+<code style="color:#6a9955">/* Resultado esperado:
+[
+  { periodo: "2024-1", total_citas: 12, citas_realizadas: 10, citas_canceladas: 2 },
+  { periodo: "2024-2", total_citas: 18, citas_realizadas: 15, citas_canceladas: 3 },
+  ...
+] */</code></pre>
+
+      <h2>Resumen del Módulo 4</h2>
+      <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; margin: 1.5rem 0;">
+        <div style="background: rgba(6,182,212,0.07); border: 1px solid rgba(6,182,212,0.25); border-radius: 10px; padding: 1.2rem;">
+          <p style="color: #06b6d4; font-weight: 700; margin-bottom: 0.4rem;">$match</p>
+          <p style="margin: 0; font-size: 0.88rem;">Filtra al inicio. Usa índices. Reduce la carga del pipeline.</p>
+        </div>
+        <div style="background: rgba(52,211,153,0.07); border: 1px solid rgba(52,211,153,0.25); border-radius: 10px; padding: 1.2rem;">
+          <p style="color: #34d399; font-weight: 700; margin-bottom: 0.4rem;">$project</p>
+          <p style="margin: 0; font-size: 0.88rem;">Moldea la salida. Crea campos calculados. Limpia el documento.</p>
+        </div>
+        <div style="background: rgba(167,113,247,0.07); border: 1px solid rgba(167,113,247,0.25); border-radius: 10px; padding: 1.2rem;">
+          <p style="color: #a371f7; font-weight: 700; margin-bottom: 0.4rem;">$group</p>
+          <p style="margin: 0; font-size: 0.88rem;">Agrupa con acumuladores. Equivale a GROUP BY + funciones de agregación.</p>
+        </div>
+        <div style="background: rgba(245,158,11,0.07); border: 1px solid rgba(245,158,11,0.25); border-radius: 10px; padding: 1.2rem;">
+          <p style="color: #f59e0b; font-weight: 700; margin-bottom: 0.4rem;">$unwind</p>
+          <p style="margin: 0; font-size: 0.88rem;">Explota arreglos. Necesario antes de agrupar por elementos de arrays.</p>
+        </div>
+        <div style="background: rgba(239,68,68,0.07); border: 1px solid rgba(239,68,68,0.25); border-radius: 10px; padding: 1.2rem;">
+          <p style="color: #ef4444; font-weight: 700; margin-bottom: 0.4rem;">$sort</p>
+          <p style="margin: 0; font-size: 0.88rem;">Ordena. Al inicio usa índices; después de $group ordena en memoria.</p>
+        </div>
+        <div style="background: rgba(99,102,241,0.07); border: 1px solid rgba(99,102,241,0.25); border-radius: 10px; padding: 1.2rem;">
+          <p style="color: #6366f1; font-weight: 700; margin-bottom: 0.4rem;">$limit / $skip</p>
+          <p style="margin: 0; font-size: 0.88rem;">Recorta y pagina. Siempre después de $sort para resultados deterministas.</p>
+        </div>
+      </div>
+
+      <p style="background: rgba(52,211,153,0.08); padding: 1.5rem; border-radius: 8px; border-left: 4px solid #34d399;"><strong>Patrón de diseño del pipeline:</strong> <code>$match</code> → <code>$unwind</code> (si hay arrays) → <code>$group</code> → <code>$sort</code> → <code>$limit</code> → <code>$project</code>. Este orden minimiza el volumen de datos en cada etapa y produce el pipeline más eficiente posible.</p>
+
+      <div class="page-nav">
+        <a href="/m4-group-unwind.html" class="nav-btn">← $group y $unwind</a>
+        <a href="/index.html" class="nav-btn next" style="background: #06b6d4;">Concluir Módulo 04 →</a>
+      </div>
+    </article>
+  </main>
+
+  <footer>
+    <p>© 2026 German Mardones. Todos los derechos reservados.</p>
+  </footer>
+
+  <script>
+    function toggleTheme() {
+      const body = document.body;
+      const currentTheme = body.getAttribute('data-theme') || 'dark';
+      const newTheme = currentTheme === 'light' ? 'dark' : 'light';
+      if (newTheme === 'dark') { body.removeAttribute('data-theme'); }
+      else { body.setAttribute('data-theme', 'light'); }
+      localStorage.setItem('theme', newTheme);
+    }
+    const savedTheme = localStorage.getItem('theme');
+    if (savedTheme === 'dark') { document.body.removeAttribute('data-theme'); }
+    else if (savedTheme === 'light') { document.body.setAttribute('data-theme', 'light'); }
+  </script>
+</body>
+</html>

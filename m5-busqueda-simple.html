@@ -1,0 +1,203 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Búsqueda Simple con Filtros y Operadores | Módulo 5 | TI3032</title>
+  <link rel="stylesheet" href="/style.css">
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;800&display=swap" rel="stylesheet">
+  <!-- Google tag (gtag.js) -->
+  <script async src="https://www.googletagmanager.com/gtag/js?id=G-LZ7J61LLCM"></script>
+  <script>
+    window.dataLayer = window.dataLayer || [];
+    function gtag(){dataLayer.push(arguments);}
+    gtag('js', new Date());
+    gtag('config', 'G-LZ7J61LLCM');
+  </script>
+</head>
+<body>
+  <div class="glass-background"></div>
+  <main class="container content-wrapper">
+    <div class="nav-header">
+      <a href="/index.html" class="back-link">← Volver al Menú Principal</a>
+      <div style="display: flex; gap: 1rem; align-items: center;">
+        <button onclick="toggleTheme()" class="nav-btn" style="padding: 0.3rem 0.8rem; font-size: 1.2rem; background: transparent; border: 1px solid var(--card-border); cursor: pointer; border-radius: 50px; color: var(--text-primary); display: flex; align-items: center; justify-content: center; width: 38px; height: 38px; transition: all 0.3s;" aria-label="Cambiar tema">🌓</button>
+        <span class="badge" style="padding: 0.3rem 1rem; border-radius: 50px; background: rgba(249, 115, 22, 0.15); color: #f97316; font-size: 0.8rem; font-weight: 600; border: 1px solid rgba(249, 115, 22, 0.3); margin-bottom: 0;">MÓDULO 05</span>
+      </div>
+    </div>
+
+    <article class="page-card">
+      <h1>1. Búsqueda Simple: Filtros y Operadores Relacionales</h1>
+
+      <p>Todo sistema de datos gira en torno a una pregunta central: <em>¿cómo encuentro exactamente lo que necesito?</em> En SQL la respuesta es la cláusula <code>WHERE</code>. En MongoDB es el <strong>documento de filtro</strong>, el primer argumento de <code>find()</code>. La diferencia clave es que en MongoDB el filtro es un <strong>objeto JSON</strong>, lo que lo hace legible, componible y nativamente tipado.</p>
+
+      <h2>Anatomía de una Consulta <code>find()</code></h2>
+      <p><code>find()</code> acepta hasta dos argumentos: el <strong>filtro</strong> (qué buscar) y la <strong>proyección</strong> (qué campos devolver). Si ambos se omiten, retorna todos los documentos con todos sus campos.</p>
+
+<pre><code style="color:#d4d4d4">db.coleccion.<code style="color:#dcdcaa">find</code>(
+  { </code><code style="color:#6a9955">/* filtro — obligatorio, {} trae todo */</code><code style="color:#d4d4d4"> },
+  { </code><code style="color:#6a9955">/* proyección — opcional */</code><code style="color:#d4d4d4"> }
+)</code></pre>
+
+      <div class="visual-comparison" style="margin: 2rem 0">
+        <div class="comparison-side sql" style="border-top-color: #f97316">
+          <p style="color:#a0a8b5; margin-bottom: 0.5rem">Filtro SQL:</p>
+          <code style="color:#fff; font-size:1.05rem">SELECT nombre, edad<br>FROM empleados<br>WHERE departamento = 'TI'<br>AND sueldo &gt;= 800000;</code>
+        </div>
+        <div class="comparison-side nosql" style="border-top-color: #7b42ff; background: rgba(123,66,255,0.05);">
+          <p style="color:#a0a8b5; margin-bottom: 0.5rem">Filtro MongoDB:</p>
+          <code style="color:#fff; font-size:1.05rem">db.empleados.find(<br>&nbsp;&nbsp;{ departamento: "TI", sueldo: { $gte: 800000 } },<br>&nbsp;&nbsp;{ nombre: 1, edad: 1, _id: 0 }<br>)</code>
+        </div>
+      </div>
+
+      <h2>Igualdad Exacta — El Filtro más Simple</h2>
+      <p>El caso más frecuente: buscar documentos donde un campo tiene un valor concreto. El objeto JSON actúa como "molde" y MongoDB devuelve los documentos que coincidan con todos los pares clave-valor que especifiques.</p>
+
+<pre><code style="color:#6a9955">// Buscar todos los productos de categoría "electrónica"</code>
+<code style="color:#d4d4d4">db.productos.<code style="color:#dcdcaa">find</code>({ categoria: </code><code style="color:#ce9178">"electrónica"</code><code style="color:#d4d4d4"> })
+
+</code><code style="color:#6a9955">// Múltiples condiciones de igualdad actúan como AND implícito</code>
+<code style="color:#d4d4d4">db.productos.<code style="color:#dcdcaa">find</code>({ categoria: </code><code style="color:#ce9178">"electrónica"</code><code style="color:#d4d4d4">, disponible: </code><code style="color:#569cd6">true</code><code style="color:#d4d4d4"> })</code></pre>
+
+      <h2>Operadores Relacionales de Comparación</h2>
+      <p>Cuando la igualdad exacta no es suficiente, se usan <strong>operadores de comparación</strong>. En MongoDB todos los operadores llevan el prefijo <code>$</code> y se anidan dentro del valor del campo:</p>
+      <p style="font-family: monospace; background: rgba(255,255,255,0.04); padding: 1rem; border-radius: 6px; border-left: 4px solid #f97316;">
+        <code>{ campo: { $operador: valor } }</code>
+      </p>
+
+      <table style="width: 100%; border-collapse: collapse; margin: 2rem 0; background: rgba(0,0,0,0.2); border-radius: 8px;">
+        <thead style="background: rgba(249, 115, 22, 0.12); color: #fff;">
+          <tr>
+            <th style="padding: 1rem; text-align: left;">Operador</th>
+            <th style="padding: 1rem; text-align: left;">Significado</th>
+            <th style="padding: 1rem; text-align: left;">Ejemplo</th>
+            <th style="padding: 1rem; text-align: left;">Equivalente SQL</th>
+          </tr>
+        </thead>
+        <tbody style="color: #a0a8b5; font-size: 0.93rem;">
+          <tr style="border-bottom: 1px solid rgba(255,255,255,0.05);">
+            <td style="padding: 1rem;"><code style="color:#f97316">$eq</code></td>
+            <td style="padding: 1rem;">Equal (igual a)</td>
+            <td style="padding: 1rem;"><code>{ edad: { $eq: 30 } }</code></td>
+            <td style="padding: 1rem;"><code>edad = 30</code></td>
+          </tr>
+          <tr style="border-bottom: 1px solid rgba(255,255,255,0.05);">
+            <td style="padding: 1rem;"><code style="color:#f97316">$ne</code></td>
+            <td style="padding: 1rem;">Not Equal (distinto de)</td>
+            <td style="padding: 1rem;"><code>{ estado: { $ne: "inactivo" } }</code></td>
+            <td style="padding: 1rem;"><code>estado &lt;&gt; 'inactivo'</code></td>
+          </tr>
+          <tr style="border-bottom: 1px solid rgba(255,255,255,0.05);">
+            <td style="padding: 1rem;"><code style="color:#f97316">$gt</code></td>
+            <td style="padding: 1rem;">Greater Than (mayor que)</td>
+            <td style="padding: 1rem;"><code>{ precio: { $gt: 50000 } }</code></td>
+            <td style="padding: 1rem;"><code>precio &gt; 50000</code></td>
+          </tr>
+          <tr style="border-bottom: 1px solid rgba(255,255,255,0.05);">
+            <td style="padding: 1rem;"><code style="color:#f97316">$gte</code></td>
+            <td style="padding: 1rem;">Greater Than or Equal</td>
+            <td style="padding: 1rem;"><code>{ stock: { $gte: 1 } }</code></td>
+            <td style="padding: 1rem;"><code>stock &gt;= 1</code></td>
+          </tr>
+          <tr style="border-bottom: 1px solid rgba(255,255,255,0.05);">
+            <td style="padding: 1rem;"><code style="color:#f97316">$lt</code></td>
+            <td style="padding: 1rem;">Less Than (menor que)</td>
+            <td style="padding: 1rem;"><code>{ edad: { $lt: 18 } }</code></td>
+            <td style="padding: 1rem;"><code>edad &lt; 18</code></td>
+          </tr>
+          <tr>
+            <td style="padding: 1rem;"><code style="color:#f97316">$lte</code></td>
+            <td style="padding: 1rem;">Less Than or Equal</td>
+            <td style="padding: 1rem;"><code>{ calificacion: { $lte: 4.0 } }</code></td>
+            <td style="padding: 1rem;"><code>calificacion &lt;= 4.0</code></td>
+          </tr>
+        </tbody>
+      </table>
+
+      <h2>Operadores de Inclusión: <code>$in</code> y <code>$nin</code></h2>
+      <p>Permiten verificar si el valor de un campo pertenece (o no) a un conjunto de valores. Son el equivalente del <code>IN (...)</code> de SQL y evitan escribir múltiples condiciones <code>$or</code>.</p>
+
+<pre><code style="color:#6a9955">// Buscar productos de categoría "electrónica" O "computación"</code>
+<code style="color:#d4d4d4">db.productos.<code style="color:#dcdcaa">find</code>({
+  categoria: { $in: [</code><code style="color:#ce9178">"electrónica"</code><code style="color:#d4d4d4">, </code><code style="color:#ce9178">"computación"</code><code style="color:#d4d4d4">] }
+})
+
+</code><code style="color:#6a9955">// Excluir productos con estado "suspendido" o "agotado"</code>
+<code style="color:#d4d4d4">db.productos.<code style="color:#dcdcaa">find</code>({
+  estado: { $nin: [</code><code style="color:#ce9178">"suspendido"</code><code style="color:#d4d4d4">, </code><code style="color:#ce9178">"agotado"</code><code style="color:#d4d4d4">] }
+})</code></pre>
+
+      <h2>Operadores Lógicos: <code>$and</code>, <code>$or</code>, <code>$not</code>, <code>$nor</code></h2>
+      <p>Permiten construir condiciones compuestas. <code>$and</code> es implícito cuando se listan múltiples campos en el mismo objeto, pero se necesita la forma explícita cuando se aplican varios operadores sobre el mismo campo.</p>
+
+<pre><code style="color:#6a9955">// $and explícito — mismo campo con dos condiciones distintas</code>
+<code style="color:#d4d4d4">db.empleados.<code style="color:#dcdcaa">find</code>({
+  $and: [
+    { sueldo: { $gte: 500000 } },
+    { sueldo: { $lte: 1500000 } }
+  ]
+})
+
+</code><code style="color:#6a9955">// $or — departamento "TI" O sueldo mayor a 2.000.000</code>
+<code style="color:#d4d4d4">db.empleados.<code style="color:#dcdcaa">find</code>({
+  $or: [
+    { departamento: </code><code style="color:#ce9178">"TI"</code><code style="color:#d4d4d4"> },
+    { sueldo: { $gt: 2000000 } }
+  ]
+})
+
+</code><code style="color:#6a9955">// $nor — ninguna de las condiciones debe cumplirse</code>
+<code style="color:#d4d4d4">db.empleados.<code style="color:#dcdcaa">find</code>({
+  $nor: [
+    { estado: </code><code style="color:#ce9178">"inactivo"</code><code style="color:#d4d4d4"> },
+    { contrato: </code><code style="color:#ce9178">"temporal"</code><code style="color:#d4d4d4"> }
+  ]
+})</code></pre>
+
+      <h2>Ejemplo Práctico Completo</h2>
+      <p>Un escenario real: buscar empleados del área de TI con sueldo entre 600.000 y 1.800.000, que no estén en estado "suspendido", ordenados por sueldo descendente y mostrando solo nombre, departamento y sueldo.</p>
+
+<pre><code style="color:#d4d4d4">db.empleados.<code style="color:#dcdcaa">find</code>(
+  {
+    departamento: </code><code style="color:#ce9178">"TI"</code><code style="color:#d4d4d4">,
+    sueldo: { $gte: 600000, $lte: 1800000 },
+    estado:  { $ne: </code><code style="color:#ce9178">"suspendido"</code><code style="color:#d4d4d4"> }
+  },
+  { nombre: 1, departamento: 1, sueldo: 1, _id: 0 }
+).<code style="color:#dcdcaa">sort</code>({ sueldo: -1 })</code>
+
+<code style="color:#6a9955">/* Resultado (ejemplo):
+[
+  { nombre: "Daniela Rojas",  departamento: "TI", sueldo: 1750000 },
+  { nombre: "Patricio Muñoz", departamento: "TI", sueldo: 1420000 },
+  { nombre: "Sofía Castillo", departamento: "TI", sueldo:  980000 }
+] */</code></pre>
+
+      <p style="background: rgba(249,115,22,0.08); padding: 1.5rem; border-radius: 8px; border-left: 4px solid #f97316;"><strong>Tip de rendimiento:</strong> Los filtros sobre campos indexados son órdenes de magnitud más rápidos. Siempre que una condición sea selectiva (filtra una fracción pequeña del total), considera crear un índice con <code>db.coleccion.createIndex({ campo: 1 })</code>.</p>
+
+      <div class="page-nav">
+        <a href="/index.html" class="nav-btn">← Menú Principal</a>
+        <a href="/m5-busqueda-regex.html" class="nav-btn next" style="background: #f97316;">Siguiente: Expresiones Regulares →</a>
+      </div>
+    </article>
+  </main>
+
+  <footer>
+    <p>© 2026 German Mardones. Todos los derechos reservados.</p>
+  </footer>
+
+  <script>
+    function toggleTheme() {
+      const body = document.body;
+      const currentTheme = body.getAttribute('data-theme') || 'dark';
+      const newTheme = currentTheme === 'light' ? 'dark' : 'light';
+      if (newTheme === 'dark') { body.removeAttribute('data-theme'); }
+      else { body.setAttribute('data-theme', 'light'); }
+      localStorage.setItem('theme', newTheme);
+    }
+    const savedTheme = localStorage.getItem('theme');
+    if (savedTheme === 'dark') { document.body.removeAttribute('data-theme'); }
+    else if (savedTheme === 'light') { document.body.setAttribute('data-theme', 'light'); }
+  </script>
+</body>
+</html>

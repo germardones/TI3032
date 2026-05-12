@@ -1,0 +1,215 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Búsqueda Avanzada con Expresiones Regulares | Módulo 5 | TI3032</title>
+  <link rel="stylesheet" href="/style.css">
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;800&display=swap" rel="stylesheet">
+  <!-- Google tag (gtag.js) -->
+  <script async src="https://www.googletagmanager.com/gtag/js?id=G-LZ7J61LLCM"></script>
+  <script>
+    window.dataLayer = window.dataLayer || [];
+    function gtag(){dataLayer.push(arguments);}
+    gtag('js', new Date());
+    gtag('config', 'G-LZ7J61LLCM');
+  </script>
+</head>
+<body>
+  <div class="glass-background"></div>
+  <main class="container content-wrapper">
+    <div class="nav-header">
+      <a href="/index.html" class="back-link">← Volver al Menú Principal</a>
+      <div style="display: flex; gap: 1rem; align-items: center;">
+        <button onclick="toggleTheme()" class="nav-btn" style="padding: 0.3rem 0.8rem; font-size: 1.2rem; background: transparent; border: 1px solid var(--card-border); cursor: pointer; border-radius: 50px; color: var(--text-primary); display: flex; align-items: center; justify-content: center; width: 38px; height: 38px; transition: all 0.3s;" aria-label="Cambiar tema">🌓</button>
+        <span class="badge" style="padding: 0.3rem 1rem; border-radius: 50px; background: rgba(249, 115, 22, 0.15); color: #f97316; font-size: 0.8rem; font-weight: 600; border: 1px solid rgba(249, 115, 22, 0.3); margin-bottom: 0;">MÓDULO 05</span>
+      </div>
+    </div>
+
+    <article class="page-card">
+      <h1>2. Búsqueda Avanzada: Expresiones Regulares</h1>
+
+      <p>Un operador de igualdad solo captura coincidencias exactas. Cuando necesitas buscar documentos donde un campo de texto <em>empieza con</em>, <em>termina con</em> o <em>contiene</em> un patrón específico, la herramienta correcta son las <strong>expresiones regulares</strong> (regex). MongoDB integra el motor de regex de PCRE (Perl Compatible Regular Expressions) directamente en sus filtros de búsqueda a través del operador <code>$regex</code>.</p>
+
+      <h2>Dos Sintaxis Equivalentes</h2>
+      <p>MongoDB acepta el patrón regex de dos formas. Ambas son funcionales; la notación de barra diagonal es más compacta, mientras que la forma con <code>$regex</code> permite agregar opciones de forma más legible.</p>
+
+      <div class="visual-comparison" style="margin: 2rem 0">
+        <div class="comparison-side sql" style="border-top-color: #f97316">
+          <p style="color:#a0a8b5; margin-bottom: 0.5rem">Notación literal de regex (JavaScript):</p>
+<pre><code style="color:#d4d4d4">db.productos.<code style="color:#dcdcaa">find</code>({
+  nombre: /teclado/i
+})</code></pre>
+        </div>
+        <div class="comparison-side nosql" style="border-top-color: #7b42ff; background: rgba(123,66,255,0.05);">
+          <p style="color:#a0a8b5; margin-bottom: 0.5rem">Notación con operador $regex:</p>
+<pre><code style="color:#d4d4d4">db.productos.<code style="color:#dcdcaa">find</code>({
+  nombre: {
+    $regex: </code><code style="color:#ce9178">"teclado"</code><code style="color:#d4d4d4">,
+    $options: </code><code style="color:#ce9178">"i"</code><code style="color:#d4d4d4">
+  }
+})</code></pre>
+        </div>
+      </div>
+
+      <h2>Opciones de Regex: el parámetro <code>$options</code></h2>
+
+      <table style="width: 100%; border-collapse: collapse; margin: 2rem 0; background: rgba(0,0,0,0.2); border-radius: 8px;">
+        <thead style="background: rgba(249, 115, 22, 0.12); color: #fff;">
+          <tr>
+            <th style="padding: 1rem; text-align: left;">Opción</th>
+            <th style="padding: 1rem; text-align: left;">Nombre</th>
+            <th style="padding: 1rem; text-align: left;">Comportamiento</th>
+          </tr>
+        </thead>
+        <tbody style="color: #a0a8b5; font-size: 0.93rem;">
+          <tr style="border-bottom: 1px solid rgba(255,255,255,0.05);">
+            <td style="padding: 1rem;"><code style="color: #f97316; font-size: 1.1rem">i</code></td>
+            <td style="padding: 1rem;">Case Insensitive</td>
+            <td style="padding: 1rem;">Ignora mayúsculas/minúsculas. <code>"teclado"</code> coincide con <code>"Teclado"</code>, <code>"TECLADO"</code>, <code>"TeCLaDo"</code>.</td>
+          </tr>
+          <tr style="border-bottom: 1px solid rgba(255,255,255,0.05);">
+            <td style="padding: 1rem;"><code style="color: #f97316; font-size: 1.1rem">m</code></td>
+            <td style="padding: 1rem;">Multiline</td>
+            <td style="padding: 1rem;">Los anchors <code>^</code> y <code>$</code> coinciden con el inicio/fin de cada línea, no solo del string completo.</td>
+          </tr>
+          <tr style="border-bottom: 1px solid rgba(255,255,255,0.05);">
+            <td style="padding: 1rem;"><code style="color: #f97316; font-size: 1.1rem">s</code></td>
+            <td style="padding: 1rem;">Dotall</td>
+            <td style="padding: 1rem;">El punto <code>.</code> coincide también con caracteres de nueva línea (<code>\n</code>), que normalmente no captura.</td>
+          </tr>
+          <tr>
+            <td style="padding: 1rem;"><code style="color: #f97316; font-size: 1.1rem">x</code></td>
+            <td style="padding: 1rem;">Extended</td>
+            <td style="padding: 1rem;">Ignora espacios en blanco y permite comentarios en el patrón regex para mejorar la legibilidad.</td>
+          </tr>
+        </tbody>
+      </table>
+
+      <h2>Patrones de Búsqueda más Comunes</h2>
+      <p>Los tres patrones siguientes cubren el 90% de los casos de uso de texto libre en aplicaciones reales.</p>
+
+      <h3 style="color: #f97316; margin-top: 1.5rem;">Comienza con (<code>^</code>)</h3>
+      <p>El anchor <code>^</code> fija el inicio del string. Útil para buscar por prefijo, por ejemplo todos los códigos de producto que empiezan con "PRD".</p>
+
+<pre><code style="color:#6a9955">// Productos cuyo nombre empieza con "Mac"</code>
+<code style="color:#d4d4d4">db.productos.<code style="color:#dcdcaa">find</code>({ nombre: { $regex: </code><code style="color:#ce9178">"^Mac"</code><code style="color:#d4d4d4"> } })
+
+</code><code style="color:#6a9955">// Emails de dominio corporativo (ignorando mayúsculas)</code>
+<code style="color:#d4d4d4">db.usuarios.<code style="color:#dcdcaa">find</code>({ email: { $regex: </code><code style="color:#ce9178">"^admin"</code><code style="color:#d4d4d4">, $options: </code><code style="color:#ce9178">"i"</code><code style="color:#d4d4d4"> } })</code></pre>
+
+      <h3 style="color: #f97316; margin-top: 1.5rem;">Termina con (<code>$</code>)</h3>
+      <p>El anchor <code>$</code> fija el final del string. Útil para buscar por extensión de archivo, dominio de email, sufijo en códigos, etc.</p>
+
+<pre><code style="color:#6a9955">// Usuarios con email del dominio @empresa.cl</code>
+<code style="color:#d4d4d4">db.usuarios.<code style="color:#dcdcaa">find</code>({ email: { $regex: </code><code style="color:#ce9178">"@empresa\\.cl$"</code><code style="color:#d4d4d4">, $options: </code><code style="color:#ce9178">"i"</code><code style="color:#d4d4d4"> } })
+
+</code><code style="color:#6a9955">// Archivos con extensión .pdf</code>
+<code style="color:#d4d4d4">db.documentos.<code style="color:#dcdcaa">find</code>({ archivo: { $regex: </code><code style="color:#ce9178">"\\.pdf$"</code><code style="color:#d4d4d4">, $options: </code><code style="color:#ce9178">"i"</code><code style="color:#d4d4d4"> } })</code></pre>
+
+      <h3 style="color: #f97316; margin-top: 1.5rem;">Contiene (sin anchors)</h3>
+      <p>Sin <code>^</code> ni <code>$</code>, el patrón puede aparecer en cualquier posición. Es el equivalente del <code>LIKE '%texto%'</code> de SQL.</p>
+
+<pre><code style="color:#6a9955">// Productos que contienen "inalámbric" en cualquier parte del nombre</code>
+<code style="color:#d4d4d4">db.productos.<code style="color:#dcdcaa">find</code>({ nombre: { $regex: </code><code style="color:#ce9178">"inalámbric"</code><code style="color:#d4d4d4">, $options: </code><code style="color:#ce9178">"i"</code><code style="color:#d4d4d4"> } })
+
+</code><code style="color:#6a9955">// Notas de soporte que mencionan "error" o "falla"</code>
+<code style="color:#d4d4d4">db.tickets.<code style="color:#dcdcaa">find</code>({ descripcion: { $regex: </code><code style="color:#ce9178">"error|falla"</code><code style="color:#d4d4d4">, $options: </code><code style="color:#ce9178">"i"</code><code style="color:#d4d4d4"> } })</code></pre>
+
+      <h2>Comparación con SQL <code>LIKE</code></h2>
+
+      <table style="width: 100%; border-collapse: collapse; margin: 2rem 0; background: rgba(0,0,0,0.2); border-radius: 8px;">
+        <thead style="background: rgba(249, 115, 22, 0.12); color: #fff;">
+          <tr>
+            <th style="padding: 1rem; text-align: left;">Patrón</th>
+            <th style="padding: 1rem; text-align: left;">SQL LIKE</th>
+            <th style="padding: 1rem; text-align: left;">MongoDB $regex</th>
+          </tr>
+        </thead>
+        <tbody style="color: #a0a8b5; font-size: 0.93rem;">
+          <tr style="border-bottom: 1px solid rgba(255,255,255,0.05);">
+            <td style="padding: 1rem; color: #d4d4d4;">Empieza con</td>
+            <td style="padding: 1rem;"><code>LIKE 'Mac%'</code></td>
+            <td style="padding: 1rem;"><code>{ $regex: "^Mac" }</code></td>
+          </tr>
+          <tr style="border-bottom: 1px solid rgba(255,255,255,0.05);">
+            <td style="padding: 1rem; color: #d4d4d4;">Termina con</td>
+            <td style="padding: 1rem;"><code>LIKE '%.cl'</code></td>
+            <td style="padding: 1rem;"><code>{ $regex: "\\.cl$" }</code></td>
+          </tr>
+          <tr style="border-bottom: 1px solid rgba(255,255,255,0.05);">
+            <td style="padding: 1rem; color: #d4d4d4;">Contiene</td>
+            <td style="padding: 1rem;"><code>LIKE '%texto%'</code></td>
+            <td style="padding: 1rem;"><code>{ $regex: "texto" }</code></td>
+          </tr>
+          <tr>
+            <td style="padding: 1rem; color: #d4d4d4;">Sin distinción mayúsculas</td>
+            <td style="padding: 1rem;"><code>ILIKE</code> (PostgreSQL)</td>
+            <td style="padding: 1rem;"><code>{ $regex: "x", $options: "i" }</code></td>
+          </tr>
+        </tbody>
+      </table>
+
+      <h2>Regex con Clases de Caracteres y Cuantificadores</h2>
+      <p>Las expresiones regulares completas permiten patrones más sofisticados usando clases de caracteres, cuantificadores y grupos.</p>
+
+<pre><code style="color:#6a9955">// RUT chileno: 7-8 dígitos, guión, dígito o K</code>
+<code style="color:#d4d4d4">db.personas.<code style="color:#dcdcaa">find</code>({
+  rut: { $regex: </code><code style="color:#ce9178">"^[0-9]{7,8}-[0-9Kk]$"</code><code style="color:#d4d4d4"> }
+})
+
+</code><code style="color:#6a9955">// Teléfono celular chileno: +569 seguido de 8 dígitos</code>
+<code style="color:#d4d4d4">db.contactos.<code style="color:#dcdcaa">find</code>({
+  telefono: { $regex: </code><code style="color:#ce9178">"^\\+569[0-9]{8}$"</code><code style="color:#d4d4d4"> }
+})
+
+</code><code style="color:#6a9955">// Código de producto: 2 letras mayúsculas + 4 dígitos (ej: TI3032)</code>
+<code style="color:#d4d4d4">db.productos.<code style="color:#dcdcaa">find</code>({
+  codigo: { $regex: </code><code style="color:#ce9178">"^[A-Z]{2}[0-9]{4}$"</code><code style="color:#d4d4d4"> }
+})</code></pre>
+
+      <h2>Uso de Regex en el Aggregation Pipeline</h2>
+      <p>Dentro de un pipeline, <code>$regex</code> se usa igual que en <code>find()</code> — dentro de una etapa <code>$match</code>.</p>
+
+<pre><code style="color:#d4d4d4">db.productos.<code style="color:#dcdcaa">aggregate</code>([
+  {
+    $match: {
+      nombre: { $regex: </code><code style="color:#ce9178">"pro"</code><code style="color:#d4d4d4">, $options: </code><code style="color:#ce9178">"i"</code><code style="color:#d4d4d4"> }
+    }
+  },
+  {
+    $group: {
+      _id: </code><code style="color:#ce9178">"$categoria"</code><code style="color:#d4d4d4">,
+      total: { $sum: 1 }
+    }
+  }
+])</code></pre>
+
+      <p style="background: rgba(239,68,68,0.08); padding: 1.5rem; border-radius: 8px; border-left: 4px solid #ef4444;"><strong>Advertencia de rendimiento:</strong> Una consulta con <code>$regex</code> sin <code>^</code> (sin anclar al inicio) realiza un <em>collection scan</em>: recorre todos los documentos. Para colecciones grandes esto puede ser lento. Si la búsqueda de texto es frecuente y el volumen es alto, considera usar un <strong>índice de texto completo</strong> con <code>db.coleccion.createIndex({ campo: "text" })</code> y el operador <code>$text</code>.</p>
+
+      <div class="page-nav">
+        <a href="/m5-busqueda-simple.html" class="nav-btn">← Filtros y Operadores</a>
+        <a href="/m5-busqueda-subdocumentos.html" class="nav-btn next" style="background: #f97316;">Siguiente: Búsquedas en Subdocumentos →</a>
+      </div>
+    </article>
+  </main>
+
+  <footer>
+    <p>© 2026 German Mardones. Todos los derechos reservados.</p>
+  </footer>
+
+  <script>
+    function toggleTheme() {
+      const body = document.body;
+      const currentTheme = body.getAttribute('data-theme') || 'dark';
+      const newTheme = currentTheme === 'light' ? 'dark' : 'light';
+      if (newTheme === 'dark') { body.removeAttribute('data-theme'); }
+      else { body.setAttribute('data-theme', 'light'); }
+      localStorage.setItem('theme', newTheme);
+    }
+    const savedTheme = localStorage.getItem('theme');
+    if (savedTheme === 'dark') { document.body.removeAttribute('data-theme'); }
+    else if (savedTheme === 'light') { document.body.setAttribute('data-theme', 'light'); }
+  </script>
+</body>
+</html>

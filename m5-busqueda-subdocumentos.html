@@ -1,0 +1,274 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Búsquedas en Subdocumentos y Arreglos | Módulo 5 | TI3032</title>
+  <link rel="stylesheet" href="/style.css">
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;800&display=swap" rel="stylesheet">
+  <!-- Google tag (gtag.js) -->
+  <script async src="https://www.googletagmanager.com/gtag/js?id=G-LZ7J61LLCM"></script>
+  <script>
+    window.dataLayer = window.dataLayer || [];
+    function gtag(){dataLayer.push(arguments);}
+    gtag('js', new Date());
+    gtag('config', 'G-LZ7J61LLCM');
+  </script>
+</head>
+<body>
+  <div class="glass-background"></div>
+  <main class="container content-wrapper">
+    <div class="nav-header">
+      <a href="/index.html" class="back-link">← Volver al Menú Principal</a>
+      <div style="display: flex; gap: 1rem; align-items: center;">
+        <button onclick="toggleTheme()" class="nav-btn" style="padding: 0.3rem 0.8rem; font-size: 1.2rem; background: transparent; border: 1px solid var(--card-border); cursor: pointer; border-radius: 50px; color: var(--text-primary); display: flex; align-items: center; justify-content: center; width: 38px; height: 38px; transition: all 0.3s;" aria-label="Cambiar tema">🌓</button>
+        <span class="badge" style="padding: 0.3rem 1rem; border-radius: 50px; background: rgba(249, 115, 22, 0.15); color: #f97316; font-size: 0.8rem; font-weight: 600; border: 1px solid rgba(249, 115, 22, 0.3); margin-bottom: 0;">MÓDULO 05</span>
+      </div>
+    </div>
+
+    <article class="page-card">
+      <h1>3. Búsquedas en Subdocumentos y Arreglos</h1>
+
+      <p>Uno de los poderes únicos de MongoDB frente a las bases relacionales es que los documentos pueden contener <strong>objetos anidados</strong> (subdocumentos) y <strong>listas</strong> (arreglos). Pero ese poder solo es aprovechable si sabemos consultarlos. Para ello MongoDB ofrece dos herramientas clave: la <strong>notación de punto</strong> para navegar la jerarquía y los <strong>operadores de arreglo</strong> para filtrar dentro de listas.</p>
+
+      <h2>Datos de Referencia para los Ejemplos</h2>
+      <p>Trabajaremos con esta colección <code>pedidos</code> que contiene subdocumentos e items en arreglo:</p>
+
+      <div class="visual-comparison" style="grid-template-columns: 1fr; margin: 1.5rem 0">
+        <div class="comparison-side nosql" style="background: rgba(25, 28, 35, 0.9);">
+<pre><code style="color:#d4d4d4">db.pedidos.insertMany([
+  {
+    _id: ObjectId(</code><code style="color:#ce9178">"p001"</code><code style="color:#d4d4d4">),
+    numero:  </code><code style="color:#ce9178">"ORD-2026-001"</code><code style="color:#d4d4d4">,
+    estado:  </code><code style="color:#ce9178">"enviado"</code><code style="color:#d4d4d4">,
+    cliente: {
+      nombre: </code><code style="color:#ce9178">"Valentina Ríos"</code><code style="color:#d4d4d4">,
+      region: </code><code style="color:#ce9178">"Metropolitana"</code><code style="color:#d4d4d4">,
+      tipo:   </code><code style="color:#ce9178">"premium"</code><code style="color:#d4d4d4">
+    },
+    items: [
+      { producto: </code><code style="color:#ce9178">"Teclado Mecánico"</code><code style="color:#d4d4d4">, cantidad: 1, precio: 85000 },
+      { producto: </code><code style="color:#ce9178">"Mouse Inalámbrico"</code><code style="color:#d4d4d4">, cantidad: 2, precio: 20450 }
+    ]
+  },
+  {
+    _id: ObjectId(</code><code style="color:#ce9178">"p002"</code><code style="color:#d4d4d4">),
+    numero:  </code><code style="color:#ce9178">"ORD-2026-002"</code><code style="color:#d4d4d4">,
+    estado:  </code><code style="color:#ce9178">"pendiente"</code><code style="color:#d4d4d4">,
+    cliente: {
+      nombre: </code><code style="color:#ce9178">"Patricio Muñoz"</code><code style="color:#d4d4d4">,
+      region: </code><code style="color:#ce9178">"Valparaíso"</code><code style="color:#d4d4d4">,
+      tipo:   </code><code style="color:#ce9178">"estándar"</code><code style="color:#d4d4d4">
+    },
+    items: [
+      { producto: </code><code style="color:#ce9178">"Monitor 24\""</code><code style="color:#d4d4d4">, cantidad: 1, precio: 320000 }
+    ]
+  }
+])</code></pre>
+        </div>
+      </div>
+
+      <h2>Notación de Punto — Acceso a Campos de Subdocumentos</h2>
+      <p>La <strong>dot notation</strong> (notación de punto) es la forma de "navegar" dentro de un subdocumento anidado. Se escribe como una cadena entre comillas: <code>"padre.hijo"</code> o <code>"abuelo.padre.hijo"</code> para niveles más profundos.</p>
+
+<pre><code style="color:#6a9955">// Buscar pedidos cuyo cliente sea de la región Metropolitana</code>
+<code style="color:#d4d4d4">db.pedidos.<code style="color:#dcdcaa">find</code>({ </code><code style="color:#ce9178">"cliente.region"</code><code style="color:#d4d4d4">: </code><code style="color:#ce9178">"Metropolitana"</code><code style="color:#d4d4d4"> })
+
+</code><code style="color:#6a9955">// Combinar filtro en subdocumento con filtro en campo raíz</code>
+<code style="color:#d4d4d4">db.pedidos.<code style="color:#dcdcaa">find</code>({
+  </code><code style="color:#ce9178">"cliente.tipo"</code><code style="color:#d4d4d4">: </code><code style="color:#ce9178">"premium"</code><code style="color:#d4d4d4">,
+  estado: { $ne: </code><code style="color:#ce9178">"cancelado"</code><code style="color:#d4d4d4"> }
+})
+
+</code><code style="color:#6a9955">// Operadores relacionales también funcionan con dot notation</code>
+<code style="color:#d4d4d4">db.usuarios.<code style="color:#dcdcaa">find</code>({
+  </code><code style="color:#ce9178">"direccion.codigo_postal"</code><code style="color:#d4d4d4">: { $regex: </code><code style="color:#ce9178">"^750"</code><code style="color:#d4d4d4"> }
+})</code></pre>
+
+      <p style="background: rgba(249,115,22,0.08); padding: 1.2rem; border-radius: 8px; border-left: 4px solid #f97316;"><strong>Regla clave:</strong> Las rutas con dot notation siempre deben ir entre comillas dobles en el filtro JSON: <code>"cliente.region"</code>. Sin comillas, MongoDB las interpretaría como dos campos separados y la consulta fallaría silenciosamente.</p>
+
+      <h2>Coincidencia Exacta de Subdocumento Completo</h2>
+      <p>Es posible hacer match con el subdocumento completo como un único valor. Esta forma requiere que el orden de los campos y todos los valores coincidan exactamente — si el documento tiene campos adicionales que no se incluyen en el filtro, <strong>no habrá match</strong>.</p>
+
+<pre><code style="color:#6a9955">// Coincidencia exacta: el subdocumento debe tener exactamente estos campos en este orden</code>
+<code style="color:#d4d4d4">db.pedidos.<code style="color:#dcdcaa">find</code>({
+  cliente: {
+    nombre: </code><code style="color:#ce9178">"Valentina Ríos"</code><code style="color:#d4d4d4">,
+    region: </code><code style="color:#ce9178">"Metropolitana"</code><code style="color:#d4d4d4">,
+    tipo:   </code><code style="color:#ce9178">"premium"</code><code style="color:#d4d4d4">
+  }
+})</code>
+
+<code style="color:#6a9955">// Recomendación: prefiere dot notation — es más flexible y resistente</code>
+<code style="color:#d4d4d4">db.pedidos.<code style="color:#dcdcaa">find</code>({ </code><code style="color:#ce9178">"cliente.nombre"</code><code style="color:#d4d4d4">: </code><code style="color:#ce9178">"Valentina Ríos"</code><code style="color:#d4d4d4"> })</code></pre>
+
+      <h2>Búsquedas en Arreglos de Valores Simples</h2>
+      <p>Cuando un campo es un arreglo de valores escalares (strings, números), MongoDB permite consultarlos directamente. Un filtro de igualdad sobre un campo de arreglo retorna los documentos donde el arreglo <em>contiene</em> ese valor.</p>
+
+<pre><code style="color:#d4d4d4">db.productos.insertMany([
+  { nombre: </code><code style="color:#ce9178">"Laptop Pro"</code><code style="color:#d4d4d4">, etiquetas: [</code><code style="color:#ce9178">"portatil"</code><code style="color:#d4d4d4">, </code><code style="color:#ce9178">"oferta"</code><code style="color:#d4d4d4">, </code><code style="color:#ce9178">"nuevo"</code><code style="color:#d4d4d4">] },
+  { nombre: </code><code style="color:#ce9178">"Escritorio"</code><code style="color:#d4d4d4">,  etiquetas: [</code><code style="color:#ce9178">"oficina"</code><code style="color:#d4d4d4">, </code><code style="color:#ce9178">"oferta"</code><code style="color:#d4d4d4">] },
+  { nombre: </code><code style="color:#ce9178">"Mouse"</code><code style="color:#d4d4d4">,       etiquetas: [</code><code style="color:#ce9178">"portatil"</code><code style="color:#d4d4d4">, </code><code style="color:#ce9178">"inalámbrico"</code><code style="color:#d4d4d4">] }
+])
+
+</code><code style="color:#6a9955">// Busca docs donde el arreglo "etiquetas" contiene "oferta"</code>
+<code style="color:#d4d4d4">db.productos.<code style="color:#dcdcaa">find</code>({ etiquetas: </code><code style="color:#ce9178">"oferta"</code><code style="color:#d4d4d4"> })
+</code><code style="color:#6a9955">// → Laptop Pro, Escritorio</code>
+
+<code style="color:#6a9955">// $all — el arreglo debe contener TODOS los valores indicados</code>
+<code style="color:#d4d4d4">db.productos.<code style="color:#dcdcaa">find</code>({ etiquetas: { $all: [</code><code style="color:#ce9178">"portatil"</code><code style="color:#d4d4d4">, </code><code style="color:#ce9178">"oferta"</code><code style="color:#d4d4d4">] } })
+</code><code style="color:#6a9955">// → Solo Laptop Pro (tiene ambas etiquetas)</code>
+
+<code style="color:#6a9955">// $size — arreglos con exactamente N elementos</code>
+<code style="color:#d4d4d4">db.productos.<code style="color:#dcdcaa">find</code>({ etiquetas: { $size: 2 } })
+</code><code style="color:#6a9955">// → Escritorio, Mouse (ambos tienen 2 etiquetas)</code></pre>
+
+      <h2><code>$elemMatch</code> — Filtrar Arreglos de Subdocumentos</h2>
+      <p>Cuando el arreglo contiene subdocumentos (objetos), necesitamos que <strong>un mismo elemento</strong> del arreglo cumpla todas las condiciones simultáneamente. El operador <code>$elemMatch</code> garantiza esto. Sin él, cada condición se evalúa de forma independiente sobre el arreglo completo, lo que puede generar falsos positivos.</p>
+
+      <div class="visual-comparison" style="margin: 2rem 0">
+        <div class="comparison-side sql" style="border-top-color: #ef4444">
+          <p style="color: #ef4444; font-weight: 600; margin-bottom: 0.5rem">Sin $elemMatch — puede dar falsos positivos:</p>
+<pre><code style="color:#d4d4d4">db.pedidos.<code style="color:#dcdcaa">find</code>({
+  </code><code style="color:#ce9178">"items.precio"</code><code style="color:#d4d4d4">:    { $gte: 50000 },
+  </code><code style="color:#ce9178">"items.cantidad"</code><code style="color:#d4d4d4">: { $gte: 2 }
+})</code>
+<code style="color:#6a9955">// Retorna doc si items[0].precio >= 50000
+// Y items[1].cantidad >= 2
+// aunque sean elementos distintos</code></pre>
+        </div>
+        <div class="comparison-side nosql" style="border-top-color: #34d399; background: rgba(52,211,153,0.05);">
+          <p style="color: #34d399; font-weight: 600; margin-bottom: 0.5rem">Con $elemMatch — un solo elemento debe cumplir todo:</p>
+<pre><code style="color:#d4d4d4">db.pedidos.<code style="color:#dcdcaa">find</code>({
+  items: {
+    $elemMatch: {
+      precio:   { $gte: 50000 },
+      cantidad: { $gte: 2 }
+    }
+  }
+})</code>
+<code style="color:#6a9955">// Retorna doc solo si existe un único
+// item que tenga precio >= 50000
+// Y cantidad >= 2 al mismo tiempo</code></pre>
+        </div>
+      </div>
+
+<pre><code style="color:#6a9955">// Ejemplo práctico: pedidos con al menos un item de Monitor con precio > 200.000</code>
+<code style="color:#d4d4d4">db.pedidos.<code style="color:#dcdcaa">find</code>({
+  items: {
+    $elemMatch: {
+      producto: { $regex: </code><code style="color:#ce9178">"Monitor"</code><code style="color:#d4d4d4">, $options: </code><code style="color:#ce9178">"i"</code><code style="color:#d4d4d4"> },
+      precio:   { $gt: 200000 }
+    }
+  }
+})</code></pre>
+
+      <h2>Notación de Punto sobre Arreglos de Subdocumentos</h2>
+      <p>La dot notation también funciona para acceder a campos dentro de arreglos de subdocumentos. MongoDB evaluará la condición sobre <strong>cada elemento</strong> del arreglo y devolverá el documento padre si al menos uno cumple.</p>
+
+<pre><code style="color:#6a9955">// Pedidos que tienen al menos un item con precio >= 80.000</code>
+<code style="color:#d4d4d4">db.pedidos.<code style="color:#dcdcaa">find</code>({ </code><code style="color:#ce9178">"items.precio"</code><code style="color:#d4d4d4">: { $gte: 80000 } })
+
+</code><code style="color:#6a9955">// Pedidos con un item cuyo nombre contiene "Teclado"</code>
+<code style="color:#d4d4d4">db.pedidos.<code style="color:#dcdcaa">find</code>({
+  </code><code style="color:#ce9178">"items.producto"</code><code style="color:#d4d4d4">: { $regex: </code><code style="color:#ce9178">"Teclado"</code><code style="color:#d4d4d4">, $options: </code><code style="color:#ce9178">"i"</code><code style="color:#d4d4d4"> }
+})</code></pre>
+
+      <h2>Acceso por Posición en el Arreglo</h2>
+      <p>Si necesitas consultar un elemento en una posición específica del arreglo, usa la notación <code>"campo.indice"</code> (índice basado en 0).</p>
+
+<pre><code style="color:#6a9955">// Buscar pedidos donde el PRIMER item tenga precio mayor a 50.000</code>
+<code style="color:#d4d4d4">db.pedidos.<code style="color:#dcdcaa">find</code>({ </code><code style="color:#ce9178">"items.0.precio"</code><code style="color:#d4d4d4">: { $gt: 50000 } })
+
+</code><code style="color:#6a9955">// Buscar pedidos donde el SEGUNDO item sea de cantidad 2</code>
+<code style="color:#d4d4d4">db.pedidos.<code style="color:#dcdcaa">find</code>({ </code><code style="color:#ce9178">"items.1.cantidad"</code><code style="color:#d4d4d4">: 2 })</code></pre>
+
+      <h2>Ejemplo Final: Consulta Combinada Multi-nivel</h2>
+      <p>Un caso real complejo: encontrar pedidos <em>enviados</em> de clientes de la región Metropolitana que incluyan al menos un item con precio mayor a 70.000, mostrando solo número de pedido, nombre del cliente e items.</p>
+
+<pre><code style="color:#d4d4d4">db.pedidos.<code style="color:#dcdcaa">find</code>(
+  {
+    estado:           </code><code style="color:#ce9178">"enviado"</code><code style="color:#d4d4d4">,
+    </code><code style="color:#ce9178">"cliente.region"</code><code style="color:#d4d4d4">: </code><code style="color:#ce9178">"Metropolitana"</code><code style="color:#d4d4d4">,
+    items: {
+      $elemMatch: { precio: { $gt: 70000 } }
+    }
+  },
+  {
+    numero:          1,
+    </code><code style="color:#ce9178">"cliente.nombre"</code><code style="color:#d4d4d4">: 1,
+    items:           1,
+    _id:             0
+  }
+)</code>
+
+<code style="color:#6a9955">/* Resultado:
+[
+  {
+    numero: "ORD-2026-001",
+    cliente: { nombre: "Valentina Ríos" },
+    items: [
+      { producto: "Teclado Mecánico", cantidad: 1, precio: 85000 },
+      { producto: "Mouse Inalámbrico", cantidad: 2, precio: 20450 }
+    ]
+  }
+] */</code></pre>
+
+      <table style="width: 100%; border-collapse: collapse; margin: 2rem 0; background: rgba(0,0,0,0.2); border-radius: 8px;">
+        <thead style="background: rgba(249, 115, 22, 0.12); color: #fff;">
+          <tr>
+            <th style="padding: 1rem; text-align: left;">Técnica</th>
+            <th style="padding: 1rem; text-align: left;">Cuándo usarla</th>
+            <th style="padding: 1rem; text-align: left;">Ejemplo</th>
+          </tr>
+        </thead>
+        <tbody style="color: #a0a8b5; font-size: 0.93rem;">
+          <tr style="border-bottom: 1px solid rgba(255,255,255,0.05);">
+            <td style="padding: 1rem; color: #d4d4d4;">Dot notation</td>
+            <td style="padding: 1rem;">Filtrar por un campo específico de un subdocumento</td>
+            <td style="padding: 1rem;"><code>"cliente.region": "RM"</code></td>
+          </tr>
+          <tr style="border-bottom: 1px solid rgba(255,255,255,0.05);">
+            <td style="padding: 1rem; color: #d4d4d4;"><code>$all</code></td>
+            <td style="padding: 1rem;">Arreglo debe contener todos los valores dados</td>
+            <td style="padding: 1rem;"><code>{ $all: ["a", "b"] }</code></td>
+          </tr>
+          <tr style="border-bottom: 1px solid rgba(255,255,255,0.05);">
+            <td style="padding: 1rem; color: #d4d4d4;"><code>$size</code></td>
+            <td style="padding: 1rem;">Arreglo con exactamente N elementos</td>
+            <td style="padding: 1rem;"><code>{ $size: 3 }</code></td>
+          </tr>
+          <tr>
+            <td style="padding: 1rem; color: #d4d4d4;"><code>$elemMatch</code></td>
+            <td style="padding: 1rem;">Un elemento del arreglo cumple múltiples condiciones</td>
+            <td style="padding: 1rem;"><code>{ $elemMatch: { precio: { $gt: 0 } } }</code></td>
+          </tr>
+        </tbody>
+      </table>
+
+      <div class="page-nav">
+        <a href="/m5-busqueda-regex.html" class="nav-btn">← Expresiones Regulares</a>
+        <a href="/index.html" class="nav-btn next" style="background: #f97316;">Concluir Módulo 05 →</a>
+      </div>
+    </article>
+  </main>
+
+  <footer>
+    <p>© 2026 German Mardones. Todos los derechos reservados.</p>
+  </footer>
+
+  <script>
+    function toggleTheme() {
+      const body = document.body;
+      const currentTheme = body.getAttribute('data-theme') || 'dark';
+      const newTheme = currentTheme === 'light' ? 'dark' : 'light';
+      if (newTheme === 'dark') { body.removeAttribute('data-theme'); }
+      else { body.setAttribute('data-theme', 'light'); }
+      localStorage.setItem('theme', newTheme);
+    }
+    const savedTheme = localStorage.getItem('theme');
+    if (savedTheme === 'dark') { document.body.removeAttribute('data-theme'); }
+    else if (savedTheme === 'light') { document.body.setAttribute('data-theme', 'light'); }
+  </script>
+</body>
+</html>

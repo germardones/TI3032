@@ -1,0 +1,334 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Iteración de Subdocumentos con PyMongo | Módulo 5 | TI3032</title>
+  <link rel="stylesheet" href="/style.css">
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;800&display=swap" rel="stylesheet">
+  <!-- Google tag (gtag.js) -->
+  <script async src="https://www.googletagmanager.com/gtag/js?id=G-LZ7J61LLCM"></script>
+  <script>
+    window.dataLayer = window.dataLayer || [];
+    function gtag(){dataLayer.push(arguments);}
+    gtag('js', new Date());
+    gtag('config', 'G-LZ7J61LLCM');
+  </script>
+</head>
+<body>
+  <div class="glass-background"></div>
+  <main class="container content-wrapper">
+    <div class="nav-header">
+      <a href="/index.html" class="back-link">← Volver al Menú Principal</a>
+      <div style="display: flex; gap: 1rem; align-items: center;">
+        <button onclick="toggleTheme()" class="nav-btn" style="padding: 0.3rem 0.8rem; font-size: 1.2rem; background: transparent; border: 1px solid var(--card-border); cursor: pointer; border-radius: 50px; color: var(--text-primary); display: flex; align-items: center; justify-content: center; width: 38px; height: 38px; transition: all 0.3s;" aria-label="Cambiar tema">🌓</button>
+        <span class="badge" style="padding: 0.3rem 1rem; border-radius: 50px; background: rgba(249, 115, 22, 0.15); color: #f97316; font-size: 0.8rem; font-weight: 600; border: 1px solid rgba(249, 115, 22, 0.3); margin-bottom: 0;">MÓDULO 05</span>
+      </div>
+    </div>
+
+    <article class="page-card">
+      <h1>4. Iteración de Subdocumentos con PyMongo</h1>
+
+      <p>Hasta ahora hemos ejecutado las consultas desde la shell de MongoDB. En la práctica, las aplicaciones acceden a la base de datos desde código. <strong>PyMongo</strong> es el driver oficial de MongoDB para Python: traduce dictionaries de Python a documentos BSON y expone la misma API de consultas que conoces — <code>find()</code>, <code>find_one()</code>, <code>aggregate()</code> — pero devolviendo objetos Python que puedes iterar, transformar y procesar con toda la potencia del lenguaje.</p>
+
+      <h2>Instalación y Conexión</h2>
+      <p>PyMongo se instala con pip. La conexión se establece a través de <code>MongoClient</code>, que acepta una URI de conexión estándar.</p>
+
+<pre><code style="color:#6a9955"># Instalar PyMongo</code>
+<code style="color:#d4d4d4">pip install pymongo</code></pre>
+
+<pre><code style="color:#569cd6">from</code> <code style="color:#d4d4d4">pymongo</code> <code style="color:#569cd6">import</code> <code style="color:#d4d4d4">MongoClient
+
+</code><code style="color:#6a9955"># Conexión local (puerto por defecto 27017)</code>
+<code style="color:#d4d4d4">client = MongoClient(</code><code style="color:#ce9178">"mongodb://localhost:27017/"</code><code style="color:#d4d4d4">)
+
+</code><code style="color:#6a9955"># Acceder a la base de datos y la colección</code>
+<code style="color:#d4d4d4">db         = client[</code><code style="color:#ce9178">"tienda"</code><code style="color:#d4d4d4">]
+pedidos    = db[</code><code style="color:#ce9178">"pedidos"</code><code style="color:#d4d4d4">]
+productos  = db[</code><code style="color:#ce9178">"productos"</code><code style="color:#d4d4d4">]</code></pre>
+
+      <p style="background: rgba(52,211,153,0.08); padding: 1.2rem; border-radius: 8px; border-left: 4px solid #34d399;">
+        <strong>Buena práctica:</strong> Usa un <strong>context manager</strong> o cierra el cliente explícitamente con <code>client.close()</code> al finalizar. En aplicaciones web o scripts de larga duración, reutiliza una sola instancia de <code>MongoClient</code> — crearla es costoso y los clientes gestionan un pool de conexiones internamente.
+      </p>
+
+      <h2>Datos de Referencia</h2>
+      <p>Trabajaremos con la misma colección <code>pedidos</code> del módulo anterior, insertada esta vez desde Python:</p>
+
+<pre><code style="color:#d4d4d4">pedidos.insert_many([
+  {
+    </code><code style="color:#ce9178">"numero"</code><code style="color:#d4d4d4">:  </code><code style="color:#ce9178">"ORD-2026-001"</code><code style="color:#d4d4d4">,
+    </code><code style="color:#ce9178">"estado"</code><code style="color:#d4d4d4">:  </code><code style="color:#ce9178">"enviado"</code><code style="color:#d4d4d4">,
+    </code><code style="color:#ce9178">"cliente"</code><code style="color:#d4d4d4">: {
+      </code><code style="color:#ce9178">"nombre"</code><code style="color:#d4d4d4">: </code><code style="color:#ce9178">"Valentina Ríos"</code><code style="color:#d4d4d4">,
+      </code><code style="color:#ce9178">"region"</code><code style="color:#d4d4d4">: </code><code style="color:#ce9178">"Metropolitana"</code><code style="color:#d4d4d4">,
+      </code><code style="color:#ce9178">"tipo"</code><code style="color:#d4d4d4">:   </code><code style="color:#ce9178">"premium"</code>
+<code style="color:#d4d4d4">    },
+    </code><code style="color:#ce9178">"items"</code><code style="color:#d4d4d4">: [
+      { </code><code style="color:#ce9178">"producto"</code><code style="color:#d4d4d4">: </code><code style="color:#ce9178">"Teclado Mecánico"</code><code style="color:#d4d4d4">,  </code><code style="color:#ce9178">"cantidad"</code><code style="color:#d4d4d4">: 1, </code><code style="color:#ce9178">"precio"</code><code style="color:#d4d4d4">: 85000 },
+      { </code><code style="color:#ce9178">"producto"</code><code style="color:#d4d4d4">: </code><code style="color:#ce9178">"Mouse Inalámbrico"</code><code style="color:#d4d4d4">, </code><code style="color:#ce9178">"cantidad"</code><code style="color:#d4d4d4">: 2, </code><code style="color:#ce9178">"precio"</code><code style="color:#d4d4d4">: 20450 }
+    ]
+  },
+  {
+    </code><code style="color:#ce9178">"numero"</code><code style="color:#d4d4d4">:  </code><code style="color:#ce9178">"ORD-2026-002"</code><code style="color:#d4d4d4">,
+    </code><code style="color:#ce9178">"estado"</code><code style="color:#d4d4d4">:  </code><code style="color:#ce9178">"pendiente"</code><code style="color:#d4d4d4">,
+    </code><code style="color:#ce9178">"cliente"</code><code style="color:#d4d4d4">: {
+      </code><code style="color:#ce9178">"nombre"</code><code style="color:#d4d4d4">: </code><code style="color:#ce9178">"Patricio Muñoz"</code><code style="color:#d4d4d4">,
+      </code><code style="color:#ce9178">"region"</code><code style="color:#d4d4d4">: </code><code style="color:#ce9178">"Valparaíso"</code><code style="color:#d4d4d4">,
+      </code><code style="color:#ce9178">"tipo"</code><code style="color:#d4d4d4">:   </code><code style="color:#ce9178">"estándar"</code>
+<code style="color:#d4d4d4">    },
+    </code><code style="color:#ce9178">"items"</code><code style="color:#d4d4d4">: [
+      { </code><code style="color:#ce9178">"producto"</code><code style="color:#d4d4d4">: </code><code style="color:#ce9178">"Monitor 24\""</code><code style="color:#d4d4d4">, </code><code style="color:#ce9178">"cantidad"</code><code style="color:#d4d4d4">: 1, </code><code style="color:#ce9178">"precio"</code><code style="color:#d4d4d4">: 320000 }
+    ]
+  }
+])</code></pre>
+
+      <h2>Iteración Básica de Resultados</h2>
+      <p><code>find()</code> en PyMongo retorna un <strong>Cursor</strong>, que es un iterador perezoso: no descarga todos los documentos de golpe, sino que los va trayendo del servidor a medida que los solicitas. Puedes recorrerlo con un <code>for</code>, convertirlo a lista con <code>list()</code>, o usar <code>find_one()</code> para obtener solo el primer resultado.</p>
+
+<pre><code style="color:#6a9955"># Iterar todos los pedidos (cursor perezoso)</code>
+<code style="color:#569cd6">for</code> <code style="color:#d4d4d4">pedido</code> <code style="color:#569cd6">in</code> <code style="color:#d4d4d4">pedidos.find():
+    print(pedido[</code><code style="color:#ce9178">"numero"</code><code style="color:#d4d4d4">], pedido[</code><code style="color:#ce9178">"estado"</code><code style="color:#d4d4d4">])
+
+</code><code style="color:#6a9955"># Obtener solo el primero</code>
+<code style="color:#d4d4d4">primero = pedidos.find_one({ </code><code style="color:#ce9178">"estado"</code><code style="color:#d4d4d4">: </code><code style="color:#ce9178">"enviado"</code><code style="color:#d4d4d4"> })
+print(primero[</code><code style="color:#ce9178">"numero"</code><code style="color:#d4d4d4">])  </code><code style="color:#6a9955"># → "ORD-2026-001"</code>
+
+<code style="color:#6a9955"># Convertir a lista (carga todos en memoria)</code>
+<code style="color:#d4d4d4">todos = list(pedidos.find())
+print(</code><code style="color:#569cd6">len</code><code style="color:#d4d4d4">(todos))  </code><code style="color:#6a9955"># → 2</code></pre>
+
+      <h2>Acceso a Subdocumentos: Notación de Punto y Diccionarios</h2>
+      <p>PyMongo devuelve cada documento MongoDB como un <strong>diccionario de Python</strong>. Los subdocumentos anidados son diccionarios dentro de diccionarios. Puedes acceder a sus campos con la sintaxis estándar de Python <code>doc["clave"]["subclave"]</code>. En los <em>filtros</em> de consulta, la dot notation sigue siendo un string entre comillas, exactamente igual que en la shell.</p>
+
+<pre><code style="color:#6a9955"># Filtrar por campo de subdocumento (dot notation en el filtro)</code>
+<code style="color:#d4d4d4">cursor = pedidos.find({ </code><code style="color:#ce9178">"cliente.region"</code><code style="color:#d4d4d4">: </code><code style="color:#ce9178">"Metropolitana"</code><code style="color:#d4d4d4"> })
+
+</code><code style="color:#569cd6">for</code> <code style="color:#d4d4d4">doc</code> <code style="color:#569cd6">in</code> <code style="color:#d4d4d4">cursor:
+    </code><code style="color:#6a9955"># Acceso al subdocumento como diccionario Python</code>
+<code style="color:#d4d4d4">    cliente = doc[</code><code style="color:#ce9178">"cliente"</code><code style="color:#d4d4d4">]
+    print(</code><code style="color:#ce9178">f"Pedido {doc['numero']} — Cliente: {cliente['nombre']} ({cliente['tipo']})"</code><code style="color:#d4d4d4">)</code></pre>
+
+      <h3 style="color: #f97316; margin-top: 1.5rem;">Acceso Seguro con <code>.get()</code></h3>
+      <p>Si un campo puede estar ausente en algunos documentos, usar <code>doc["campo"]</code> lanzará un <code>KeyError</code>. El método <code>.get()</code> devuelve un valor por defecto (por defecto <code>None</code>) si la clave no existe — lo que hace la iteración más robusta.</p>
+
+<pre><code style="color:#569cd6">for</code> <code style="color:#d4d4d4">doc</code> <code style="color:#569cd6">in</code> <code style="color:#d4d4d4">pedidos.find():
+    cliente = doc.get(</code><code style="color:#ce9178">"cliente"</code><code style="color:#d4d4d4">, {})
+    nombre  = cliente.get(</code><code style="color:#ce9178">"nombre"</code><code style="color:#d4d4d4">, </code><code style="color:#ce9178">"Sin nombre"</code><code style="color:#d4d4d4">)
+    region  = cliente.get(</code><code style="color:#ce9178">"region"</code><code style="color:#d4d4d4">, </code><code style="color:#ce9178">"Sin región"</code><code style="color:#d4d4d4">)
+    print(</code><code style="color:#ce9178">f"{nombre} — {region}"</code><code style="color:#d4d4d4">)</code></pre>
+
+      <h2>Iteración de Arreglos de Subdocumentos</h2>
+      <p>Los arreglos de subdocumentos (como <code>items</code>) se representan en Python como <strong>listas de diccionarios</strong>. Puedes iterar sobre ellas con un bucle <code>for</code> anidado, aplicar comprensiones de lista o filtrarlas con <code>filter()</code>.</p>
+
+<pre><code style="color:#6a9955"># Recorrer todos los pedidos e imprimir sus items</code>
+<code style="color:#569cd6">for</code> <code style="color:#d4d4d4">pedido</code> <code style="color:#569cd6">in</code> <code style="color:#d4d4d4">pedidos.find():
+    print(</code><code style="color:#ce9178">f"\nPedido {pedido['numero']}:"</code><code style="color:#d4d4d4">)
+    </code><code style="color:#569cd6">for</code> <code style="color:#d4d4d4">item</code> <code style="color:#569cd6">in</code> <code style="color:#d4d4d4">pedido.get(</code><code style="color:#ce9178">"items"</code><code style="color:#d4d4d4">, []):
+        subtotal = item[</code><code style="color:#ce9178">"cantidad"</code><code style="color:#d4d4d4">] * item[</code><code style="color:#ce9178">"precio"</code><code style="color:#d4d4d4">]
+        print(</code><code style="color:#ce9178">f"  · {item['producto']:25s} x{item['cantidad']}  → ${subtotal:>10,.0f}"</code><code style="color:#d4d4d4">)</code>
+
+<code style="color:#6a9955">"""
+Salida esperada:
+Pedido ORD-2026-001:
+  · Teclado Mecánico          x1  →     $85,000
+  · Mouse Inalámbrico         x2  →     $40,900
+
+Pedido ORD-2026-002:
+  · Monitor 24"               x1  →    $320,000
+"""</code></pre>
+
+      <h2>Filtros con <code>$elemMatch</code> desde PyMongo</h2>
+      <p>Los operadores de MongoDB como <code>$elemMatch</code>, <code>$gte</code>, <code>$all</code> se expresan en PyMongo como strings dentro de diccionarios Python. La sintaxis es idéntica al JSON de la shell, simplemente usando comillas para las claves.</p>
+
+<pre><code style="color:#6a9955"># Pedidos con al menos un item cuyo precio sea >= 50.000 Y cantidad >= 2</code>
+<code style="color:#d4d4d4">cursor = pedidos.find({
+    </code><code style="color:#ce9178">"items"</code><code style="color:#d4d4d4">: {
+        </code><code style="color:#ce9178">"$elemMatch"</code><code style="color:#d4d4d4">: {
+            </code><code style="color:#ce9178">"precio"</code><code style="color:#d4d4d4">:   { </code><code style="color:#ce9178">"$gte"</code><code style="color:#d4d4d4">: 50000 },
+            </code><code style="color:#ce9178">"cantidad"</code><code style="color:#d4d4d4">: { </code><code style="color:#ce9178">"$gte"</code><code style="color:#d4d4d4">: 2 }
+        }
+    }
+})
+
+</code><code style="color:#569cd6">for</code> <code style="color:#d4d4d4">doc</code> <code style="color:#569cd6">in</code> <code style="color:#d4d4d4">cursor:
+    print(doc[</code><code style="color:#ce9178">"numero"</code><code style="color:#d4d4d4">])  </code><code style="color:#6a9955"># No retorna nada: ningún item tiene precio >= 50k Y cantidad >= 2</code>
+
+<code style="color:#6a9955"># Pedidos con al menos un item de precio > 80.000 (dot notation sobre arreglo)</code>
+<code style="color:#d4d4d4">cursor = pedidos.find({ </code><code style="color:#ce9178">"items.precio"</code><code style="color:#d4d4d4">: { </code><code style="color:#ce9178">"$gt"</code><code style="color:#d4d4d4">: 80000 } })
+</code><code style="color:#569cd6">for</code> <code style="color:#d4d4d4">doc</code> <code style="color:#569cd6">in</code> <code style="color:#d4d4d4">cursor:
+    print(doc[</code><code style="color:#ce9178">"numero"</code><code style="color:#d4d4d4">])  </code><code style="color:#6a9955"># → ORD-2026-001 y ORD-2026-002</code></pre>
+
+      <h2>Proyección desde PyMongo</h2>
+      <p>El segundo argumento de <code>find()</code> es el diccionario de proyección, equivalente al segundo parámetro de <code>find()</code> en la shell. Sirve para traer solo los campos necesarios y reducir el volumen de datos transferidos.</p>
+
+<pre><code style="color:#6a9955"># Traer solo numero, cliente.nombre e items (sin _id)</code>
+<code style="color:#d4d4d4">cursor = pedidos.find(
+    { </code><code style="color:#ce9178">"estado"</code><code style="color:#d4d4d4">: </code><code style="color:#ce9178">"enviado"</code><code style="color:#d4d4d4"> },
+    {
+        </code><code style="color:#ce9178">"numero"</code><code style="color:#d4d4d4">:         1,
+        </code><code style="color:#ce9178">"cliente.nombre"</code><code style="color:#d4d4d4">: 1,
+        </code><code style="color:#ce9178">"items"</code><code style="color:#d4d4d4">:          1,
+        </code><code style="color:#ce9178">"_id"</code><code style="color:#d4d4d4">:           0
+    }
+)
+
+</code><code style="color:#569cd6">for</code> <code style="color:#d4d4d4">doc</code> <code style="color:#569cd6">in</code> <code style="color:#d4d4d4">cursor:
+    print(doc)</code>
+
+<code style="color:#6a9955">"""
+{
+  'numero': 'ORD-2026-001',
+  'cliente': {'nombre': 'Valentina Ríos'},
+  'items': [
+    {'producto': 'Teclado Mecánico',  'cantidad': 1, 'precio': 85000},
+    {'producto': 'Mouse Inalámbrico', 'cantidad': 2, 'precio': 20450}
+  ]
+}
+"""</code></pre>
+
+      <h2>Caso Práctico: Resumen de Pedidos con Cálculo de Totales</h2>
+      <p>Un ejemplo completo que combina filtrado en subdocumentos, iteración de arreglos y procesamiento con Python para generar un resumen ejecutivo por pedido.</p>
+
+<pre><code style="color:#569cd6">import</code> <code style="color:#d4d4d4">re
+</code><code style="color:#569cd6">from</code> <code style="color:#d4d4d4">pymongo</code> <code style="color:#569cd6">import</code> <code style="color:#d4d4d4">MongoClient
+
+client  = MongoClient(</code><code style="color:#ce9178">"mongodb://localhost:27017/"</code><code style="color:#d4d4d4">)
+pedidos = client[</code><code style="color:#ce9178">"tienda"</code><code style="color:#d4d4d4">][</code><code style="color:#ce9178">"pedidos"</code><code style="color:#d4d4d4">]
+
+</code><code style="color:#569cd6">def</code> <code style="color:#dcdcaa">resumen_por_region</code><code style="color:#d4d4d4">(region: str) -> </code><code style="color:#569cd6">None</code><code style="color:#d4d4d4">:
+    filtro = {
+        </code><code style="color:#ce9178">"cliente.region"</code><code style="color:#d4d4d4">: { </code><code style="color:#ce9178">"$regex"</code><code style="color:#d4d4d4">: region, </code><code style="color:#ce9178">"$options"</code><code style="color:#d4d4d4">: </code><code style="color:#ce9178">"i"</code><code style="color:#d4d4d4"> },
+        </code><code style="color:#ce9178">"estado"</code><code style="color:#d4d4d4">:          { </code><code style="color:#ce9178">"$ne"</code><code style="color:#d4d4d4">: </code><code style="color:#ce9178">"cancelado"</code><code style="color:#d4d4d4"> }
+    }
+
+    print(</code><code style="color:#ce9178">f"\n{'='*50}"</code><code style="color:#d4d4d4">)
+    print(</code><code style="color:#ce9178">f" Región: {region}"</code><code style="color:#d4d4d4">)
+    print(</code><code style="color:#ce9178">f"{'='*50}"</code><code style="color:#d4d4d4">)
+
+    total_general = 0
+    </code><code style="color:#569cd6">for</code> <code style="color:#d4d4d4">pedido</code> <code style="color:#569cd6">in</code> <code style="color:#d4d4d4">pedidos.find(filtro):
+        nombre  = pedido[</code><code style="color:#ce9178">"cliente"</code><code style="color:#d4d4d4">][</code><code style="color:#ce9178">"nombre"</code><code style="color:#d4d4d4">]
+        items   = pedido.get(</code><code style="color:#ce9178">"items"</code><code style="color:#d4d4d4">, [])
+
+        </code><code style="color:#6a9955"># Calcular total del pedido iterando el arreglo de subdocumentos</code>
+<code style="color:#d4d4d4">        total   = sum(i[</code><code style="color:#ce9178">"precio"</code><code style="color:#d4d4d4">] * i[</code><code style="color:#ce9178">"cantidad"</code><code style="color:#d4d4d4">] </code><code style="color:#569cd6">for</code> <code style="color:#d4d4d4">i</code> <code style="color:#569cd6">in</code> <code style="color:#d4d4d4">items)
+        n_items = </code><code style="color:#569cd6">len</code><code style="color:#d4d4d4">(items)
+
+        print(</code><code style="color:#ce9178">f"\n  {pedido['numero']} — {nombre}"</code><code style="color:#d4d4d4">)
+        print(</code><code style="color:#ce9178">f"  Estado:  {pedido['estado']}"</code><code style="color:#d4d4d4">)
+        print(</code><code style="color:#ce9178">f"  Items:   {n_items}"</code><code style="color:#d4d4d4">)
+        print(</code><code style="color:#ce9178">f"  Total:   ${total:,.0f}"</code><code style="color:#d4d4d4">)
+
+        total_general += total
+
+    print(</code><code style="color:#ce9178">f"\n  TOTAL REGIÓN: ${total_general:,.0f}"</code><code style="color:#d4d4d4">)
+
+resumen_por_region(</code><code style="color:#ce9178">"Metropolitana"</code><code style="color:#d4d4d4">)
+client.close()</code></pre>
+
+      <h2>Uso de <code>sort()</code>, <code>limit()</code> y <code>skip()</code></h2>
+      <p>El cursor de PyMongo admite encadenamiento de métodos para ordenar, limitar y paginar resultados. Los campos de subdocumentos se ordenan igual que en la shell.</p>
+
+<pre><code style="color:#6a9955"># Los 3 pedidos más caros (por precio del primer item)</code>
+<code style="color:#d4d4d4">cursor = (
+    pedidos
+    .find({ </code><code style="color:#ce9178">"estado"</code><code style="color:#d4d4d4">: </code><code style="color:#ce9178">"enviado"</code><code style="color:#d4d4d4"> })
+    .sort(</code><code style="color:#ce9178">"items.0.precio"</code><code style="color:#d4d4d4">, -1)  </code><code style="color:#6a9955"># -1 = descendente</code>
+<code style="color:#d4d4d4">    .limit(3)
+)
+
+</code><code style="color:#6a9955"># Paginación: página 2, 10 resultados por página</code>
+<code style="color:#d4d4d4">pagina   = 2
+por_pag  = 10
+cursor   = pedidos.find().skip((pagina - 1) * por_pag).limit(por_pag)</code></pre>
+
+      <h2>Aggregation Pipeline desde Python</h2>
+      <p>Para análisis más complejos sobre subdocumentos y arreglos, el <em>aggregation pipeline</em> es la herramienta correcta. En PyMongo se pasa como una lista de diccionarios al método <code>aggregate()</code>.</p>
+
+<pre><code style="color:#6a9955"># Sumar el total de ventas por región</code>
+<code style="color:#d4d4d4">pipeline = [
+    { </code><code style="color:#ce9178">"$unwind"</code><code style="color:#d4d4d4">: </code><code style="color:#ce9178">"$items"</code><code style="color:#d4d4d4"> },
+    {
+        </code><code style="color:#ce9178">"$group"</code><code style="color:#d4d4d4">: {
+            </code><code style="color:#ce9178">"_id"</code><code style="color:#d4d4d4">:    </code><code style="color:#ce9178">"$cliente.region"</code><code style="color:#d4d4d4">,
+            </code><code style="color:#ce9178">"total"</code><code style="color:#d4d4d4">: {
+                </code><code style="color:#ce9178">"$sum"</code><code style="color:#d4d4d4">: {
+                    </code><code style="color:#ce9178">"$multiply"</code><code style="color:#d4d4d4">: [</code><code style="color:#ce9178">"$items.precio"</code><code style="color:#d4d4d4">, </code><code style="color:#ce9178">"$items.cantidad"</code><code style="color:#d4d4d4">]
+                }
+            }
+        }
+    },
+    { </code><code style="color:#ce9178">"$sort"</code><code style="color:#d4d4d4">: { </code><code style="color:#ce9178">"total"</code><code style="color:#d4d4d4">: -1 } }
+]
+
+</code><code style="color:#569cd6">for</code> <code style="color:#d4d4d4">r</code> <code style="color:#569cd6">in</code> <code style="color:#d4d4d4">pedidos.aggregate(pipeline):
+    print(</code><code style="color:#ce9178">f"{r['_id']:20s}  ${r['total']:>12,.0f}"</code><code style="color:#d4d4d4">)</code>
+
+<code style="color:#6a9955">"""
+Valparaíso            $   320,000
+Metropolitana         $   125,900
+"""</code></pre>
+
+      <table style="width: 100%; border-collapse: collapse; margin: 2rem 0; background: rgba(0,0,0,0.2); border-radius: 8px;">
+        <thead style="background: rgba(249, 115, 22, 0.12); color: #fff;">
+          <tr>
+            <th style="padding: 1rem; text-align: left;">Operación</th>
+            <th style="padding: 1rem; text-align: left;">Shell MongoDB</th>
+            <th style="padding: 1rem; text-align: left;">PyMongo</th>
+          </tr>
+        </thead>
+        <tbody style="color: #a0a8b5; font-size: 0.93rem;">
+          <tr style="border-bottom: 1px solid rgba(255,255,255,0.05);">
+            <td style="padding: 1rem; color: #d4d4d4;">Filtro subdocumento</td>
+            <td style="padding: 1rem;"><code>{ "cliente.region": "RM" }</code></td>
+            <td style="padding: 1rem;"><code>{ "cliente.region": "RM" }</code></td>
+          </tr>
+          <tr style="border-bottom: 1px solid rgba(255,255,255,0.05);">
+            <td style="padding: 1rem; color: #d4d4d4;">Acceso al valor</td>
+            <td style="padding: 1rem;"><code>doc.cliente.region</code></td>
+            <td style="padding: 1rem;"><code>doc["cliente"]["region"]</code></td>
+          </tr>
+          <tr style="border-bottom: 1px solid rgba(255,255,255,0.05);">
+            <td style="padding: 1rem; color: #d4d4d4;">Iterar arreglo</td>
+            <td style="padding: 1rem;">N/A (shell)</td>
+            <td style="padding: 1rem;"><code>for item in doc["items"]:</code></td>
+          </tr>
+          <tr style="border-bottom: 1px solid rgba(255,255,255,0.05);">
+            <td style="padding: 1rem; color: #d4d4d4;">Acceso seguro</td>
+            <td style="padding: 1rem;">N/A</td>
+            <td style="padding: 1rem;"><code>doc.get("campo", default)</code></td>
+          </tr>
+          <tr>
+            <td style="padding: 1rem; color: #d4d4d4;">Pipeline</td>
+            <td style="padding: 1rem;"><code>db.col.aggregate([...])</code></td>
+            <td style="padding: 1rem;"><code>col.aggregate([...])</code></td>
+          </tr>
+        </tbody>
+      </table>
+
+      <div class="page-nav">
+        <a href="/m5-busqueda-subdocumentos.html" class="nav-btn">← Búsquedas en Subdocumentos</a>
+        <a href="/m5-seguridad-referencial.html" class="nav-btn next" style="background: #f97316;">Siguiente: Seguridad Referencial →</a>
+      </div>
+    </article>
+  </main>
+
+  <footer>
+    <p>© 2026 German Mardones. Todos los derechos reservados.</p>
+  </footer>
+
+  <script>
+    function toggleTheme() {
+      const body = document.body;
+      const currentTheme = body.getAttribute('data-theme') || 'dark';
+      const newTheme = currentTheme === 'light' ? 'dark' : 'light';
+      if (newTheme === 'dark') { body.removeAttribute('data-theme'); }
+      else { body.setAttribute('data-theme', 'light'); }
+      localStorage.setItem('theme', newTheme);
+    }
+    const savedTheme = localStorage.getItem('theme');
+    if (savedTheme === 'dark') { document.body.removeAttribute('data-theme'); }
+    else if (savedTheme === 'light') { document.body.setAttribute('data-theme', 'light'); }
+  </script>
+</body>
+</html>

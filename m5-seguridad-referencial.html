@@ -1,0 +1,314 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Seguridad Referencial con PyMongo | Módulo 5 | TI3032</title>
+  <link rel="stylesheet" href="/style.css">
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;800&display=swap" rel="stylesheet">
+  <!-- Google tag (gtag.js) -->
+  <script async src="https://www.googletagmanager.com/gtag/js?id=G-LZ7J61LLCM"></script>
+  <script>
+    window.dataLayer = window.dataLayer || [];
+    function gtag(){dataLayer.push(arguments);}
+    gtag('js', new Date());
+    gtag('config', 'G-LZ7J61LLCM');
+  </script>
+</head>
+<body>
+  <div class="glass-background"></div>
+  <main class="container content-wrapper">
+    <div class="nav-header">
+      <a href="/index.html" class="back-link">← Volver al Menú Principal</a>
+      <div style="display: flex; gap: 1rem; align-items: center;">
+        <button onclick="toggleTheme()" class="nav-btn" style="padding: 0.3rem 0.8rem; font-size: 1.2rem; background: transparent; border: 1px solid var(--card-border); cursor: pointer; border-radius: 50px; color: var(--text-primary); display: flex; align-items: center; justify-content: center; width: 38px; height: 38px; transition: all 0.3s;" aria-label="Cambiar tema">🌓</button>
+        <span class="badge" style="padding: 0.3rem 1rem; border-radius: 50px; background: rgba(249, 115, 22, 0.15); color: #f97316; font-size: 0.8rem; font-weight: 600; border: 1px solid rgba(249, 115, 22, 0.3); margin-bottom: 0;">MÓDULO 05</span>
+      </div>
+    </div>
+
+    <article class="page-card">
+      <h1>5. Seguridad Referencial e Implementación con PyMongo</h1>
+
+      <p>En las bases de datos relacionales, las <strong>claves foráneas</strong> (<em>foreign keys</em>) garantizan que una fila no pueda referenciar a otra que no existe — el motor rechaza la operación con un error. MongoDB, como base de datos documental, <strong>no tiene este mecanismo nativo</strong>: puedes guardar cualquier <code>ObjectId</code> o valor en un campo de referencia sin que MongoDB verifique que existe el documento correspondiente. Esto es una decisión de diseño deliberada para ganar flexibilidad y rendimiento, pero traslada la responsabilidad de la integridad al nivel de la aplicación.</p>
+
+      <h2>El Problema: Referencias Huérfanas</h2>
+      <p>Sin control, es fácil crear inconsistencias. Los escenarios más comunes son:</p>
+
+      <div class="visual-comparison" style="margin: 2rem 0">
+        <div class="comparison-side sql" style="border-top-color: #ef4444">
+          <p style="color: #ef4444; font-weight: 600; margin-bottom: 0.5rem">Referencia a documento inexistente:</p>
+<pre><code style="color:#6a9955"># Se inserta un pedido con cliente_id que no existe</code>
+<code style="color:#d4d4d4">pedidos.insert_one({
+    </code><code style="color:#ce9178">"numero"</code><code style="color:#d4d4d4">:     </code><code style="color:#ce9178">"ORD-2026-999"</code><code style="color:#d4d4d4">,
+    </code><code style="color:#ce9178">"cliente_id"</code><code style="color:#d4d4d4">: ObjectId(</code><code style="color:#ce9178">"000000000000000000000000"</code><code style="color:#d4d4d4">)
+    </code><code style="color:#6a9955"># MongoDB acepta esto sin error</code>
+<code style="color:#d4d4d4">})</code></pre>
+        </div>
+        <div class="comparison-side nosql" style="border-top-color: #ef4444">
+          <p style="color: #ef4444; font-weight: 600; margin-bottom: 0.5rem">Documento padre eliminado sin limpiar hijos:</p>
+<pre><code style="color:#6a9955"># Se elimina el cliente sin borrar sus pedidos</code>
+<code style="color:#d4d4d4">clientes.delete_one({ </code><code style="color:#ce9178">"_id"</code><code style="color:#d4d4d4">: cliente_id })
+</code><code style="color:#6a9955"># Los pedidos de ese cliente quedan "huérfanos"
+# con una referencia que ya no apunta a nada</code></pre>
+        </div>
+      </div>
+
+      <h2>Estrategia 1: Referencias vs. Subdocumentos Embebidos</h2>
+      <p>La primera decisión de diseño es si los datos relacionados deben guardarse como <strong>referencia</strong> (almacenar solo el <code>_id</code> del otro documento) o como <strong>subdocumento embebido</strong> (copiar los datos dentro del mismo documento). Cada enfoque tiene implicaciones de integridad distintas.</p>
+
+      <table style="width: 100%; border-collapse: collapse; margin: 2rem 0; background: rgba(0,0,0,0.2); border-radius: 8px;">
+        <thead style="background: rgba(249, 115, 22, 0.12); color: #fff;">
+          <tr>
+            <th style="padding: 1rem; text-align: left;">Aspecto</th>
+            <th style="padding: 1rem; text-align: left;">Referencia</th>
+            <th style="padding: 1rem; text-align: left;">Subdocumento embebido</th>
+          </tr>
+        </thead>
+        <tbody style="color: #a0a8b5; font-size: 0.93rem;">
+          <tr style="border-bottom: 1px solid rgba(255,255,255,0.05);">
+            <td style="padding: 1rem; color: #d4d4d4;">Integridad</td>
+            <td style="padding: 1rem;">Riesgo de referencia huérfana</td>
+            <td style="padding: 1rem;">Sin riesgo (dato copiado)</td>
+          </tr>
+          <tr style="border-bottom: 1px solid rgba(255,255,255,0.05);">
+            <td style="padding: 1rem; color: #d4d4d4;">Actualizaciones</td>
+            <td style="padding: 1rem;">Cambiar el original actualiza todo</td>
+            <td style="padding: 1rem;">Cambiar el original NO afecta las copias</td>
+          </tr>
+          <tr style="border-bottom: 1px solid rgba(255,255,255,0.05);">
+            <td style="padding: 1rem; color: #d4d4d4;">Consulta</td>
+            <td style="padding: 1rem;">Requiere <code>$lookup</code> o segunda query</td>
+            <td style="padding: 1rem;">Todo en una sola lectura</td>
+          </tr>
+          <tr>
+            <td style="padding: 1rem; color: #d4d4d4;">Ideal para</td>
+            <td style="padding: 1rem;">Datos que cambian frecuentemente</td>
+            <td style="padding: 1rem;">Datos estables o históricos</td>
+          </tr>
+        </tbody>
+      </table>
+
+      <h2>Estrategia 2: Validación Manual de Referencias en PyMongo</h2>
+      <p>La forma más directa de garantizar integridad referencial es verificar la existencia del documento referenciado <strong>antes de insertar</strong>. La función auxiliar siguiente encapsula este patrón.</p>
+
+<pre><code style="color:#569cd6">from</code> <code style="color:#d4d4d4">pymongo</code> <code style="color:#569cd6">import</code> <code style="color:#d4d4d4">MongoClient
+</code><code style="color:#569cd6">from</code> <code style="color:#d4d4d4">bson</code> <code style="color:#569cd6">import</code> <code style="color:#d4d4d4">ObjectId
+
+client   = MongoClient(</code><code style="color:#ce9178">"mongodb://localhost:27017/"</code><code style="color:#d4d4d4">)
+db       = client[</code><code style="color:#ce9178">"tienda"</code><code style="color:#d4d4d4">]
+clientes = db[</code><code style="color:#ce9178">"clientes"</code><code style="color:#d4d4d4">]
+pedidos  = db[</code><code style="color:#ce9178">"pedidos"</code><code style="color:#d4d4d4">]
+productos = db[</code><code style="color:#ce9178">"productos"</code><code style="color:#d4d4d4">]
+
+</code><code style="color:#569cd6">def</code> <code style="color:#dcdcaa">existe</code><code style="color:#d4d4d4">(coleccion, doc_id) -> bool:
+    </code><code style="color:#ce9178">"""Retorna True si el documento con ese _id existe en la colección."""</code>
+<code style="color:#d4d4d4">    </code><code style="color:#569cd6">return</code> <code style="color:#d4d4d4">coleccion.count_documents({ </code><code style="color:#ce9178">"_id"</code><code style="color:#d4d4d4">: doc_id }, limit=1) > 0
+
+</code><code style="color:#569cd6">def</code> <code style="color:#dcdcaa">crear_pedido</code><code style="color:#d4d4d4">(cliente_id: ObjectId, items: list) -> dict:
+    </code><code style="color:#6a9955"># 1. Validar que el cliente existe</code>
+<code style="color:#d4d4d4">    </code><code style="color:#569cd6">if not</code> <code style="color:#d4d4d4">existe(clientes, cliente_id):
+        </code><code style="color:#569cd6">raise</code> <code style="color:#d4d4d4">ValueError(</code><code style="color:#ce9178">f"Cliente {cliente_id} no existe"</code><code style="color:#d4d4d4">)
+
+    </code><code style="color:#6a9955"># 2. Validar que cada producto referenciado existe</code>
+<code style="color:#d4d4d4">    </code><code style="color:#569cd6">for</code> <code style="color:#d4d4d4">item</code> <code style="color:#569cd6">in</code> <code style="color:#d4d4d4">items:
+        pid = item.get(</code><code style="color:#ce9178">"producto_id"</code><code style="color:#d4d4d4">)
+        </code><code style="color:#569cd6">if</code> <code style="color:#d4d4d4">pid</code> <code style="color:#569cd6">and not</code> <code style="color:#d4d4d4">existe(productos, pid):
+            </code><code style="color:#569cd6">raise</code> <code style="color:#d4d4d4">ValueError(</code><code style="color:#ce9178">f"Producto {pid} no existe"</code><code style="color:#d4d4d4">)
+
+    </code><code style="color:#6a9955"># 3. Solo insertar si todas las referencias son válidas</code>
+<code style="color:#d4d4d4">    doc = {
+        </code><code style="color:#ce9178">"cliente_id"</code><code style="color:#d4d4d4">: cliente_id,
+        </code><code style="color:#ce9178">"estado"</code><code style="color:#d4d4d4">:     </code><code style="color:#ce9178">"pendiente"</code><code style="color:#d4d4d4">,
+        </code><code style="color:#ce9178">"items"</code><code style="color:#d4d4d4">:     items
+    }
+    resultado = pedidos.insert_one(doc)
+    </code><code style="color:#569cd6">return</code> <code style="color:#d4d4d4">{ </code><code style="color:#ce9178">"insertado"</code><code style="color:#d4d4d4">: str(resultado.inserted_id) }</code></pre>
+
+      <h2>Estrategia 3: Validación de Esquema con JSON Schema</h2>
+      <p>MongoDB permite definir un <strong>validador de esquema</strong> directamente en la colección usando el estándar JSON Schema. Esto garantiza integridad de tipos y campos obligatorios en el motor, sin depender de la capa de aplicación.</p>
+
+<pre><code style="color:#6a9955"># Crear la colección con validación de esquema</code>
+<code style="color:#d4d4d4">db.create_collection(</code><code style="color:#ce9178">"pedidos"</code><code style="color:#d4d4d4">, validator={
+    </code><code style="color:#ce9178">"$jsonSchema"</code><code style="color:#d4d4d4">: {
+        </code><code style="color:#ce9178">"bsonType"</code><code style="color:#d4d4d4">:   </code><code style="color:#ce9178">"object"</code><code style="color:#d4d4d4">,
+        </code><code style="color:#ce9178">"required"</code><code style="color:#d4d4d4">:   [</code><code style="color:#ce9178">"cliente_id"</code><code style="color:#d4d4d4">, </code><code style="color:#ce9178">"estado"</code><code style="color:#d4d4d4">, </code><code style="color:#ce9178">"items"</code><code style="color:#d4d4d4">],
+        </code><code style="color:#ce9178">"properties"</code><code style="color:#d4d4d4">: {
+            </code><code style="color:#ce9178">"cliente_id"</code><code style="color:#d4d4d4">: { </code><code style="color:#ce9178">"bsonType"</code><code style="color:#d4d4d4">: </code><code style="color:#ce9178">"objectId"</code><code style="color:#d4d4d4"> },
+            </code><code style="color:#ce9178">"estado"</code><code style="color:#d4d4d4">: {
+                </code><code style="color:#ce9178">"bsonType"</code><code style="color:#d4d4d4">: </code><code style="color:#ce9178">"string"</code><code style="color:#d4d4d4">,
+                </code><code style="color:#ce9178">"enum"</code><code style="color:#d4d4d4">:     [</code><code style="color:#ce9178">"pendiente"</code><code style="color:#d4d4d4">, </code><code style="color:#ce9178">"enviado"</code><code style="color:#d4d4d4">, </code><code style="color:#ce9178">"cancelado"</code><code style="color:#d4d4d4">]
+            },
+            </code><code style="color:#ce9178">"items"</code><code style="color:#d4d4d4">: {
+                </code><code style="color:#ce9178">"bsonType"</code><code style="color:#d4d4d4">: </code><code style="color:#ce9178">"array"</code><code style="color:#d4d4d4">,
+                </code><code style="color:#ce9178">"minItems"</code><code style="color:#d4d4d4">: 1,
+                </code><code style="color:#ce9178">"items"</code><code style="color:#d4d4d4">: {
+                    </code><code style="color:#ce9178">"bsonType"</code><code style="color:#d4d4d4">: </code><code style="color:#ce9178">"object"</code><code style="color:#d4d4d4">,
+                    </code><code style="color:#ce9178">"required"</code><code style="color:#d4d4d4">: [</code><code style="color:#ce9178">"producto_id"</code><code style="color:#d4d4d4">, </code><code style="color:#ce9178">"cantidad"</code><code style="color:#d4d4d4">, </code><code style="color:#ce9178">"precio"</code><code style="color:#d4d4d4">],
+                    </code><code style="color:#ce9178">"properties"</code><code style="color:#d4d4d4">: {
+                        </code><code style="color:#ce9178">"producto_id"</code><code style="color:#d4d4d4">: { </code><code style="color:#ce9178">"bsonType"</code><code style="color:#d4d4d4">: </code><code style="color:#ce9178">"objectId"</code><code style="color:#d4d4d4"> },
+                        </code><code style="color:#ce9178">"cantidad"</code><code style="color:#d4d4d4">:   { </code><code style="color:#ce9178">"bsonType"</code><code style="color:#d4d4d4">: </code><code style="color:#ce9178">"int"</code><code style="color:#d4d4d4">, </code><code style="color:#ce9178">"minimum"</code><code style="color:#d4d4d4">: 1 },
+                        </code><code style="color:#ce9178">"precio"</code><code style="color:#d4d4d4">:    { </code><code style="color:#ce9178">"bsonType"</code><code style="color:#d4d4d4">: </code><code style="color:#ce9178">"int"</code><code style="color:#d4d4d4">, </code><code style="color:#ce9178">"minimum"</code><code style="color:#d4d4d4">: 0 }
+                    }
+                }
+            }
+        }
+    }
+})</code></pre>
+
+      <p style="background: rgba(249,115,22,0.08); padding: 1.2rem; border-radius: 8px; border-left: 4px solid #f97316;"><strong>Límite importante:</strong> JSON Schema valida <em>estructura y tipos</em>, pero <strong>no puede verificar que un <code>ObjectId</code> apunta a un documento real</strong> en otra colección. Para eso siempre se requiere validación explícita en la aplicación (como la función <code>crear_pedido</code> del ejemplo anterior).</p>
+
+      <h2>Estrategia 4: Eliminación en Cascada con PyMongo</h2>
+      <p>En SQL, un <code>ON DELETE CASCADE</code> elimina automáticamente las filas hijas cuando se borra el padre. En MongoDB esto también debe implementarse en la aplicación. El patrón recomendado es usar una función que primero elimine los documentos dependientes y luego el documento padre.</p>
+
+<pre><code style="color:#569cd6">from</code> <code style="color:#d4d4d4">pymongo</code> <code style="color:#569cd6">import</code> <code style="color:#d4d4d4">MongoClient
+</code><code style="color:#569cd6">from</code> <code style="color:#d4d4d4">bson</code> <code style="color:#569cd6">import</code> <code style="color:#d4d4d4">ObjectId
+
+client   = MongoClient(</code><code style="color:#ce9178">"mongodb://localhost:27017/"</code><code style="color:#d4d4d4">)
+db       = client[</code><code style="color:#ce9178">"tienda"</code><code style="color:#d4d4d4">]
+
+</code><code style="color:#569cd6">def</code> <code style="color:#dcdcaa">eliminar_cliente_en_cascada</code><code style="color:#d4d4d4">(cliente_id: ObjectId) -> dict:
+    </code><code style="color:#6a9955"># 1. Verificar que el cliente existe antes de operar</code>
+<code style="color:#d4d4d4">    cliente = db.clientes.find_one({ </code><code style="color:#ce9178">"_id"</code><code style="color:#d4d4d4">: cliente_id })
+    </code><code style="color:#569cd6">if not</code> <code style="color:#d4d4d4">cliente:
+        </code><code style="color:#569cd6">raise</code> <code style="color:#d4d4d4">ValueError(</code><code style="color:#ce9178">f"Cliente {cliente_id} no encontrado"</code><code style="color:#d4d4d4">)
+
+    </code><code style="color:#6a9955"># 2. Contar pedidos dependientes</code>
+<code style="color:#d4d4d4">    n_pedidos = db.pedidos.count_documents({ </code><code style="color:#ce9178">"cliente_id"</code><code style="color:#d4d4d4">: cliente_id })
+
+    </code><code style="color:#6a9955"># 3. Eliminar primero los documentos dependientes</code>
+<code style="color:#d4d4d4">    db.pedidos.delete_many({ </code><code style="color:#ce9178">"cliente_id"</code><code style="color:#d4d4d4">: cliente_id })
+
+    </code><code style="color:#6a9955"># 4. Eliminar el documento padre</code>
+<code style="color:#d4d4d4">    db.clientes.delete_one({ </code><code style="color:#ce9178">"_id"</code><code style="color:#d4d4d4">: cliente_id })
+
+    </code><code style="color:#569cd6">return</code> <code style="color:#d4d4d4">{
+        </code><code style="color:#ce9178">"cliente_eliminado"</code><code style="color:#d4d4d4">: str(cliente_id),
+        </code><code style="color:#ce9178">"pedidos_eliminados"</code><code style="color:#d4d4d4">: n_pedidos
+    }</code></pre>
+
+      <h2>Estrategia 5: Detección de Referencias Huérfanas</h2>
+      <p>En sistemas existentes con datos históricos, es útil ejecutar una consulta de auditoría para detectar documentos que referencian IDs que ya no existen. El aggregation pipeline con <code>$lookup</code> es la herramienta ideal.</p>
+
+<pre><code style="color:#6a9955"># Detectar pedidos cuyos cliente_id ya no existen en la colección clientes</code>
+<code style="color:#d4d4d4">pipeline = [
+    {
+        </code><code style="color:#ce9178">"$lookup"</code><code style="color:#d4d4d4">: {
+            </code><code style="color:#ce9178">"from"</code><code style="color:#d4d4d4">:         </code><code style="color:#ce9178">"clientes"</code><code style="color:#d4d4d4">,
+            </code><code style="color:#ce9178">"localField"</code><code style="color:#d4d4d4">:  </code><code style="color:#ce9178">"cliente_id"</code><code style="color:#d4d4d4">,
+            </code><code style="color:#ce9178">"foreignField"</code><code style="color:#d4d4d4">: </code><code style="color:#ce9178">"_id"</code><code style="color:#d4d4d4">,
+            </code><code style="color:#ce9178">"as"</code><code style="color:#d4d4d4">:           </code><code style="color:#ce9178">"cliente_doc"</code>
+<code style="color:#d4d4d4">        }
+    },
+    {
+        </code><code style="color:#ce9178">"$match"</code><code style="color:#d4d4d4">: {
+            </code><code style="color:#ce9178">"cliente_doc"</code><code style="color:#d4d4d4">: { </code><code style="color:#ce9178">"$size"</code><code style="color:#d4d4d4">: 0 }  </code><code style="color:#6a9955"># array vacío = referencia rota</code>
+<code style="color:#d4d4d4">        }
+    },
+    {
+        </code><code style="color:#ce9178">"$project"</code><code style="color:#d4d4d4">: {
+            </code><code style="color:#ce9178">"numero"</code><code style="color:#d4d4d4">:     1,
+            </code><code style="color:#ce9178">"cliente_id"</code><code style="color:#d4d4d4">: 1,
+            </code><code style="color:#ce9178">"_id"</code><code style="color:#d4d4d4">:        0
+        }
+    }
+]
+
+huerfanos = list(db.pedidos.aggregate(pipeline))
+</code><code style="color:#569cd6">if</code> <code style="color:#d4d4d4">huerfanos:
+    print(</code><code style="color:#ce9178">f"Se encontraron {len(huerfanos)} pedidos huérfanos:"</code><code style="color:#d4d4d4">)
+    </code><code style="color:#569cd6">for</code> <code style="color:#d4d4d4">p</code> <code style="color:#569cd6">in</code> <code style="color:#d4d4d4">huerfanos:
+        print(</code><code style="color:#ce9178">f"  · {p['numero']} → cliente_id: {p['cliente_id']}"</code><code style="color:#d4d4d4">)
+</code><code style="color:#569cd6">else</code><code style="color:#d4d4d4">:
+    print(</code><code style="color:#ce9178">"Sin referencias rotas."</code><code style="color:#d4d4d4">)</code></pre>
+
+      <h2>Transacciones Multi-documento</h2>
+      <p>Desde MongoDB 4.0, las operaciones que afectan a <strong>múltiples documentos o colecciones</strong> pueden envolverse en una <strong>transacción ACID</strong>. Esto garantiza que si falla cualquier paso, todos los cambios se revierten — el mismo principio del <em>commit/rollback</em> de SQL.</p>
+
+<pre><code style="color:#569cd6">from</code> <code style="color:#d4d4d4">pymongo</code> <code style="color:#569cd6">import</code> <code style="color:#d4d4d4">MongoClient
+</code><code style="color:#569cd6">from</code> <code style="color:#d4d4d4">bson</code> <code style="color:#569cd6">import</code> <code style="color:#d4d4d4">ObjectId
+
+client = MongoClient(</code><code style="color:#ce9178">"mongodb://localhost:27017/"</code><code style="color:#d4d4d4">)
+db     = client[</code><code style="color:#ce9178">"tienda"</code><code style="color:#d4d4d4">]
+
+</code><code style="color:#569cd6">def</code> <code style="color:#dcdcaa">transferir_pedido</code><code style="color:#d4d4d4">(pedido_id: ObjectId, nuevo_cliente_id: ObjectId):
+    </code><code style="color:#569cd6">with</code> <code style="color:#d4d4d4">client.start_session() </code><code style="color:#569cd6">as</code> <code style="color:#d4d4d4">sesion:
+        </code><code style="color:#569cd6">with</code> <code style="color:#d4d4d4">sesion.start_transaction():
+            </code><code style="color:#6a9955"># Verificar que el nuevo cliente existe (dentro de la transacción)</code>
+<code style="color:#d4d4d4">            </code><code style="color:#569cd6">if not</code> <code style="color:#d4d4d4">db.clientes.find_one({ </code><code style="color:#ce9178">"_id"</code><code style="color:#d4d4d4">: nuevo_cliente_id }, session=sesion):
+                </code><code style="color:#569cd6">raise</code> <code style="color:#d4d4d4">ValueError(</code><code style="color:#ce9178">"Nuevo cliente no existe"</code><code style="color:#d4d4d4">)
+
+            </code><code style="color:#6a9955"># Actualizar la referencia en el pedido</code>
+<code style="color:#d4d4d4">            db.pedidos.update_one(
+                { </code><code style="color:#ce9178">"_id"</code><code style="color:#d4d4d4">: pedido_id },
+                { </code><code style="color:#ce9178">"$set"</code><code style="color:#d4d4d4">: { </code><code style="color:#ce9178">"cliente_id"</code><code style="color:#d4d4d4">: nuevo_cliente_id } },
+                session=sesion
+            )
+            </code><code style="color:#6a9955"># Si algo falla aquí, el update anterior también se revierte</code></pre>
+
+      <p style="background: rgba(52,211,153,0.08); padding: 1.2rem; border-radius: 8px; border-left: 4px solid #34d399;"><strong>Requisito:</strong> Las transacciones multi-documento requieren que MongoDB esté corriendo en un <strong>Replica Set</strong> (incluso uno de un solo nodo) o en un cluster compartido. En una instancia standalone sin replica set, las transacciones no están disponibles.</p>
+
+      <h2>Resumen: Checklist de Integridad Referencial</h2>
+
+      <table style="width: 100%; border-collapse: collapse; margin: 2rem 0; background: rgba(0,0,0,0.2); border-radius: 8px;">
+        <thead style="background: rgba(249, 115, 22, 0.12); color: #fff;">
+          <tr>
+            <th style="padding: 1rem; text-align: left;">Situación</th>
+            <th style="padding: 1rem; text-align: left;">Solución recomendada</th>
+            <th style="padding: 1rem; text-align: left;">Implementación</th>
+          </tr>
+        </thead>
+        <tbody style="color: #a0a8b5; font-size: 0.93rem;">
+          <tr style="border-bottom: 1px solid rgba(255,255,255,0.05);">
+            <td style="padding: 1rem; color: #d4d4d4;">Insertar con referencia</td>
+            <td style="padding: 1rem;">Verificar existencia antes de insertar</td>
+            <td style="padding: 1rem;"><code>count_documents({ "_id": id }) > 0</code></td>
+          </tr>
+          <tr style="border-bottom: 1px solid rgba(255,255,255,0.05);">
+            <td style="padding: 1rem; color: #d4d4d4;">Eliminar documento padre</td>
+            <td style="padding: 1rem;">Eliminar hijos primero (cascada manual)</td>
+            <td style="padding: 1rem;"><code>delete_many({ "padre_id": id })</code></td>
+          </tr>
+          <tr style="border-bottom: 1px solid rgba(255,255,255,0.05);">
+            <td style="padding: 1rem; color: #d4d4d4;">Validar estructura del documento</td>
+            <td style="padding: 1rem;">JSON Schema en la colección</td>
+            <td style="padding: 1rem;"><code>create_collection(..., validator={...})</code></td>
+          </tr>
+          <tr style="border-bottom: 1px solid rgba(255,255,255,0.05);">
+            <td style="padding: 1rem; color: #d4d4d4;">Operaciones multi-colección</td>
+            <td style="padding: 1rem;">Transacciones ACID</td>
+            <td style="padding: 1rem;"><code>client.start_session()</code></td>
+          </tr>
+          <tr>
+            <td style="padding: 1rem; color: #d4d4d4;">Auditoría de datos existentes</td>
+            <td style="padding: 1rem;">Pipeline con <code>$lookup</code> y <code>$size: 0</code></td>
+            <td style="padding: 1rem;">Script periódico de detección</td>
+          </tr>
+        </tbody>
+      </table>
+
+      <div class="page-nav">
+        <a href="/m5-pymongo-subdocumentos.html" class="nav-btn">← Iteración con PyMongo</a>
+        <a href="/index.html" class="nav-btn next" style="background: #f97316;">Concluir Módulo 05 →</a>
+      </div>
+    </article>
+  </main>
+
+  <footer>
+    <p>© 2026 German Mardones. Todos los derechos reservados.</p>
+  </footer>
+
+  <script>
+    function toggleTheme() {
+      const body = document.body;
+      const currentTheme = body.getAttribute('data-theme') || 'dark';
+      const newTheme = currentTheme === 'light' ? 'dark' : 'light';
+      if (newTheme === 'dark') { body.removeAttribute('data-theme'); }
+      else { body.setAttribute('data-theme', 'light'); }
+      localStorage.setItem('theme', newTheme);
+    }
+    const savedTheme = localStorage.getItem('theme');
+    if (savedTheme === 'dark') { document.body.removeAttribute('data-theme'); }
+    else if (savedTheme === 'light') { document.body.setAttribute('data-theme', 'light'); }
+  </script>
+</body>
+</html>

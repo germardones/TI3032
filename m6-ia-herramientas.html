@@ -1,0 +1,196 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Herramientas de IA en React | Módulo 6 | TI3032</title>
+  <link rel="stylesheet" href="/style.css">
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;800&display=swap" rel="stylesheet">
+  <script async src="https://www.googletagmanager.com/gtag/js?id=G-LZ7J61LLCM"></script>
+  <script>
+    window.dataLayer = window.dataLayer || [];
+    function gtag(){dataLayer.push(arguments);}
+    gtag('js', new Date());
+    gtag('config', 'G-LZ7J61LLCM');
+  </script>
+</head>
+<body>
+  <div class="glass-background"></div>
+  <main class="container content-wrapper">
+    <div class="nav-header">
+      <a href="/index.html" class="back-link">← Volver al Menú Principal</a>
+      <div style="display: flex; gap: 1rem; align-items: center;">
+        <button onclick="toggleTheme()" class="nav-btn" style="padding: 0.3rem 0.8rem; font-size: 1.2rem; background: transparent; border: 1px solid var(--card-border); cursor: pointer; border-radius: 50px; color: var(--text-primary); display: flex; align-items: center; justify-content: center; width: 38px; height: 38px; transition: all 0.3s;" aria-label="Cambiar tema">🌓</button>
+        <span class="badge" style="padding: 0.3rem 1rem; border-radius: 50px; background: rgba(139, 92, 246, 0.15); color: #8b5cf6; font-size: 0.8rem; font-weight: 600; border: 1px solid rgba(139, 92, 246, 0.3); margin-bottom: 0;">MÓDULO 06</span>
+      </div>
+    </div>
+
+    <article class="page-card">
+      <h1>5. Herramientas de IA en Desarrollo con React</h1>
+
+      <p>El ecosistema de desarrollo moderno incorpora herramientas de <strong>inteligencia artificial</strong> que aceleran la escritura de código, detectan errores antes de llegar a producción y mejoran la calidad del software. Las dos herramientas más relevantes para proyectos React son <strong>GitHub Copilot</strong> y <strong>SonarQube</strong>.</p>
+
+      <h2>GitHub Copilot</h2>
+      <p>GitHub Copilot es un asistente de codificación con IA que sugiere líneas y funciones completas mientras escribes. Está integrado en VS Code, JetBrains y otros IDEs. Está entrenado en código público de GitHub y usa modelos de lenguaje para predecir el código más probable dado el contexto.</p>
+
+      <h3>Casos de uso en React</h3>
+
+<pre><code style="color:#6a9955">// 1. Escribir el nombre de la función y Copilot sugiere la implementación</code>
+<code style="color:#569cd6">function</code> <code style="color:#dcdcaa">useDebounce</code><code style="color:#d4d4d4">(valor, delay) {
+  </code><code style="color:#569cd6">const</code> <code style="color:#d4d4d4">[valorDebounced, setValorDebounced] = useState(valor);
+
+  useEffect(() =&gt; {
+    </code><code style="color:#569cd6">const</code> <code style="color:#d4d4d4">timer = setTimeout(() =&gt; setValorDebounced(valor), delay);
+    </code><code style="color:#569cd6">return</code> <code style="color:#d4d4d4">() =&gt; clearTimeout(timer);
+  }, [valor, delay]);
+
+  </code><code style="color:#569cd6">return</code> <code style="color:#d4d4d4">valorDebounced;
+}</code></pre>
+
+<pre><code style="color:#6a9955">// 2. Escribir un comentario descriptivo y Copilot genera el componente</code>
+<code style="color:#6a9955">// Componente que muestra una tabla paginada de usuarios con búsqueda por nombre</code>
+<code style="color:#569cd6">function</code> <code style="color:#dcdcaa">TablaUsuarios</code><code style="color:#d4d4d4">({ usuarios }) {
+  </code><code style="color:#569cd6">const</code> <code style="color:#d4d4d4">[busqueda,  setBusqueda]  = useState(</code><code style="color:#ce9178">''</code><code style="color:#d4d4d4">);
+  </code><code style="color:#569cd6">const</code> <code style="color:#d4d4d4">[pagina,    setPagina]    = useState(</code><code style="color:#b5cea8">1</code><code style="color:#d4d4d4">);
+  </code><code style="color:#569cd6">const</code> <code style="color:#d4d4d4">POR_PAGINA = </code><code style="color:#b5cea8">10</code><code style="color:#d4d4d4">;
+
+  </code><code style="color:#569cd6">const</code> <code style="color:#d4d4d4">filtrados  = usuarios.filter(u =&gt;
+    u.nombre.toLowerCase().includes(busqueda.toLowerCase())
+  );
+  </code><code style="color:#569cd6">const</code> <code style="color:#d4d4d4">paginados  = filtrados.slice((pagina - </code><code style="color:#b5cea8">1</code><code style="color:#d4d4d4">) * POR_PAGINA, pagina * POR_PAGINA);
+  </code><code style="color:#569cd6">const</code> <code style="color:#d4d4d4">totalPags  = Math.ceil(filtrados.length / POR_PAGINA);
+
+  </code><code style="color:#6a9955">// ... render de la tabla</code>
+<code style="color:#d4d4d4">}</code></pre>
+
+      <h3>Buenas prácticas con Copilot</h3>
+      <table style="width: 100%; border-collapse: collapse; margin: 2rem 0; background: rgba(0,0,0,0.2); border-radius: 8px;">
+        <thead style="background: rgba(139, 92, 246, 0.12); color: #fff;">
+          <tr>
+            <th style="padding: 1rem; text-align: left;">Hacer</th>
+            <th style="padding: 1rem; text-align: left;">Evitar</th>
+          </tr>
+        </thead>
+        <tbody style="color: #a0a8b5; font-size: 0.93rem;">
+          <tr style="border-bottom: 1px solid rgba(255,255,255,0.05);">
+            <td style="padding: 1rem; color: #d4d4d4;">Revisar cada sugerencia antes de aceptarla</td>
+            <td style="padding: 1rem;">Aceptar código sin entenderlo</td>
+          </tr>
+          <tr style="border-bottom: 1px solid rgba(255,255,255,0.05);">
+            <td style="padding: 1rem; color: #d4d4d4;">Usar Copilot para tareas repetitivas (boilerplate)</td>
+            <td style="padding: 1rem;">Delegar arquitectura o decisiones de diseño</td>
+          </tr>
+          <tr style="border-bottom: 1px solid rgba(255,255,255,0.05);">
+            <td style="padding: 1rem; color: #d4d4d4;">Verificar que las dependencias sugeridas existan</td>
+            <td style="padding: 1rem;">Confiar ciegamente en imports de módulos inventados</td>
+          </tr>
+          <tr>
+            <td style="padding: 1rem; color: #d4d4d4;">Usar contextos específicos (comentarios claros)</td>
+            <td style="padding: 1rem;">Esperar sugerencias correctas sin contexto</td>
+          </tr>
+        </tbody>
+      </table>
+
+      <h2>SonarQube</h2>
+      <p>SonarQube es una plataforma de análisis estático de código que detecta <strong>bugs</strong>, <strong>vulnerabilidades de seguridad</strong>, <strong>code smells</strong> y mide la <strong>cobertura de tests</strong>. Se integra con pipelines CI/CD para evitar que código problemático llegue a producción.</p>
+
+      <h3>Problemas que detecta SonarQube en React</h3>
+
+<pre><code style="color:#6a9955">// ❌ SonarQube detecta: Posible XSS con dangerouslySetInnerHTML</code>
+<code style="color:#569cd6">function</code> <code style="color:#dcdcaa">ContenidoInseguro</code><code style="color:#d4d4d4">({ html }) {
+  </code><code style="color:#569cd6">return</code> <code style="color:#d4d4d4">&lt;div dangerouslySetInnerHTML={{ __html: html }} /&gt;;
+  </code><code style="color:#6a9955">// Regla: react/no-danger — riesgo de XSS si `html` viene de usuario</code>
+<code style="color:#d4d4d4">}
+
+</code><code style="color:#6a9955">// ✅ Alternativa segura: sanitizar primero</code>
+<code style="color:#569cd6">import</code> <code style="color:#d4d4d4">DOMPurify </code><code style="color:#569cd6">from</code> <code style="color:#ce9178">'dompurify'</code><code style="color:#d4d4d4">;
+
+</code><code style="color:#569cd6">function</code> <code style="color:#dcdcaa">ContenidoSeguro</code><code style="color:#d4d4d4">({ html }) {
+  </code><code style="color:#569cd6">const</code> <code style="color:#d4d4d4">htmlLimpio = DOMPurify.sanitize(html);
+  </code><code style="color:#569cd6">return</code> <code style="color:#d4d4d4">&lt;div dangerouslySetInnerHTML={{ __html: htmlLimpio }} /&gt;;
+}</code></pre>
+
+<pre><code style="color:#6a9955">// ❌ SonarQube detecta: useEffect sin cleanup puede causar memory leak</code>
+<code style="color:#d4d4d4">useEffect(() =&gt; {
+  </code><code style="color:#569cd6">const</code> <code style="color:#d4d4d4">id = setInterval(() =&gt; console.log(</code><code style="color:#ce9178">'tick'</code><code style="color:#d4d4d4">), </code><code style="color:#b5cea8">1000</code><code style="color:#d4d4d4">);
+  </code><code style="color:#6a9955">// Falta el return con clearInterval</code>
+<code style="color:#d4d4d4">}, []);
+
+</code><code style="color:#6a9955">// ✅ Con cleanup correcto</code>
+<code style="color:#d4d4d4">useEffect(() =&gt; {
+  </code><code style="color:#569cd6">const</code> <code style="color:#d4d4d4">id = setInterval(() =&gt; console.log(</code><code style="color:#ce9178">'tick'</code><code style="color:#d4d4d4">), </code><code style="color:#b5cea8">1000</code><code style="color:#d4d4d4">);
+  </code><code style="color:#569cd6">return</code> <code style="color:#d4d4d4">() =&gt; clearInterval(id);
+}, []);</code></pre>
+
+      <h3>Métricas clave de SonarQube</h3>
+      <table style="width: 100%; border-collapse: collapse; margin: 2rem 0; background: rgba(0,0,0,0.2); border-radius: 8px;">
+        <thead style="background: rgba(139, 92, 246, 0.12); color: #fff;">
+          <tr>
+            <th style="padding: 1rem; text-align: left;">Métrica</th>
+            <th style="padding: 1rem; text-align: left;">Descripción</th>
+          </tr>
+        </thead>
+        <tbody style="color: #a0a8b5; font-size: 0.93rem;">
+          <tr style="border-bottom: 1px solid rgba(255,255,255,0.05);">
+            <td style="padding: 1rem; color: #d4d4d4;">Bugs</td>
+            <td style="padding: 1rem;">Errores de lógica que causarán fallos en runtime.</td>
+          </tr>
+          <tr style="border-bottom: 1px solid rgba(255,255,255,0.05);">
+            <td style="padding: 1rem; color: #d4d4d4;">Vulnerabilidades</td>
+            <td style="padding: 1rem;">Puntos de entrada para ataques (XSS, inyección, etc.).</td>
+          </tr>
+          <tr style="border-bottom: 1px solid rgba(255,255,255,0.05);">
+            <td style="padding: 1rem; color: #d4d4d4;">Code Smells</td>
+            <td style="padding: 1rem;">Código que funciona pero es difícil de mantener o entender.</td>
+          </tr>
+          <tr style="border-bottom: 1px solid rgba(255,255,255,0.05);">
+            <td style="padding: 1rem; color: #d4d4d4;">Cobertura</td>
+            <td style="padding: 1rem;">Porcentaje del código cubierto por pruebas automatizadas.</td>
+          </tr>
+          <tr>
+            <td style="padding: 1rem; color: #d4d4d4;">Deuda técnica</td>
+            <td style="padding: 1rem;">Tiempo estimado para corregir todos los problemas detectados.</td>
+          </tr>
+        </tbody>
+      </table>
+
+      <h3>Integración en el flujo de trabajo</h3>
+
+<pre><code style="color:#6a9955"># sonar-project.properties — configuración básica</code>
+<code style="color:#d4d4d4">sonar.projectKey=mi-app-react
+sonar.projectName=Mi App React
+sonar.sources=src
+sonar.exclusions=**/node_modules/**,**/*.test.js
+sonar.javascript.lcov.reportPaths=coverage/lcov.info</code></pre>
+
+<pre><code style="color:#6a9955"># Ejecutar análisis (requiere SonarQube Server o SonarCloud)</code>
+<code style="color:#d4d4d4">npx sonar-scanner</code></pre>
+
+      <p style="background: rgba(139,92,246,0.08); padding: 1.2rem; border-radius: 8px; border-left: 4px solid #8b5cf6;"><strong>Flujo recomendado:</strong> Copilot acelera la escritura de código → ESLint / Prettier mantiene el estilo → SonarQube detecta vulnerabilidades → los tests verifican el comportamiento. Las herramientas de IA no reemplazan las pruebas; las complementan.</p>
+
+      <div class="page-nav">
+        <a href="/m6-api-fetch.html" class="nav-btn">← API y Fetch</a>
+        <a href="/m6-seguridad-spa.html" class="nav-btn next" style="background: #8b5cf6;">6. Seguridad SPA →</a>
+      </div>
+    </article>
+  </main>
+
+  <footer>
+    <p>© 2026 German Mardones. Todos los derechos reservados.</p>
+  </footer>
+
+  <script>
+    function toggleTheme() {
+      const body = document.body;
+      const currentTheme = body.getAttribute('data-theme') || 'dark';
+      const newTheme = currentTheme === 'light' ? 'dark' : 'light';
+      if (newTheme === 'dark') { body.removeAttribute('data-theme'); }
+      else { body.setAttribute('data-theme', 'light'); }
+      localStorage.setItem('theme', newTheme);
+    }
+    const savedTheme = localStorage.getItem('theme');
+    if (savedTheme === 'dark') { document.body.removeAttribute('data-theme'); }
+    else if (savedTheme === 'light') { document.body.setAttribute('data-theme', 'light'); }
+  </script>
+</body>
+</html>

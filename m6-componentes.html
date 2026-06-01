@@ -1,0 +1,194 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Codificación Basada en Componentes | Módulo 6 | TI3032</title>
+  <link rel="stylesheet" href="/style.css">
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;800&display=swap" rel="stylesheet">
+  <script async src="https://www.googletagmanager.com/gtag/js?id=G-LZ7J61LLCM"></script>
+  <script>
+    window.dataLayer = window.dataLayer || [];
+    function gtag(){dataLayer.push(arguments);}
+    gtag('js', new Date());
+    gtag('config', 'G-LZ7J61LLCM');
+  </script>
+</head>
+<body>
+  <div class="glass-background"></div>
+  <main class="container content-wrapper">
+    <div class="nav-header">
+      <a href="/index.html" class="back-link">← Volver al Menú Principal</a>
+      <div style="display: flex; gap: 1rem; align-items: center;">
+        <button onclick="toggleTheme()" class="nav-btn" style="padding: 0.3rem 0.8rem; font-size: 1.2rem; background: transparent; border: 1px solid var(--card-border); cursor: pointer; border-radius: 50px; color: var(--text-primary); display: flex; align-items: center; justify-content: center; width: 38px; height: 38px; transition: all 0.3s;" aria-label="Cambiar tema">🌓</button>
+        <span class="badge" style="padding: 0.3rem 1rem; border-radius: 50px; background: rgba(139, 92, 246, 0.15); color: #8b5cf6; font-size: 0.8rem; font-weight: 600; border: 1px solid rgba(139, 92, 246, 0.3); margin-bottom: 0;">MÓDULO 06</span>
+      </div>
+    </div>
+
+    <article class="page-card">
+      <h1>2. Codificación Basada en Componentes</h1>
+
+      <p>El modelo mental central de React es dividir la interfaz en piezas independientes y reutilizables: los <strong>componentes</strong>. Cada componente encapsula su propio marcado, lógica y (opcionalmente) estilos. La UI completa no es más que un árbol de componentes anidados.</p>
+
+      <h2>Props: Comunicación Padre → Hijo</h2>
+      <p>Las <strong>props</strong> son el mecanismo para pasar datos de un componente padre a uno hijo. Son de solo lectura: el hijo nunca debe modificar sus propias props.</p>
+
+<pre><code style="color:#6a9955">// Componente hijo — recibe props como parámetro</code>
+<code style="color:#569cd6">function</code> <code style="color:#dcdcaa">TarjetaProducto</code><code style="color:#d4d4d4">({ nombre, precio, disponible }) {
+  </code><code style="color:#569cd6">return</code> <code style="color:#d4d4d4">(
+    &lt;div className=</code><code style="color:#ce9178">"tarjeta"</code><code style="color:#d4d4d4">&gt;
+      &lt;h3&gt;{nombre}&lt;/h3&gt;
+      &lt;p&gt;${precio.toFixed(</code><code style="color:#b5cea8">2</code><code style="color:#d4d4d4">)}&lt;/p&gt;
+      &lt;span&gt;{disponible ? </code><code style="color:#ce9178">'En stock'</code> <code style="color:#d4d4d4">: </code><code style="color:#ce9178">'Agotado'</code><code style="color:#d4d4d4">}&lt;/span&gt;
+    &lt;/div&gt;
+  );
+}
+
+</code><code style="color:#6a9955">// Componente padre — pasa los datos como atributos JSX</code>
+<code style="color:#569cd6">function</code> <code style="color:#dcdcaa">App</code><code style="color:#d4d4d4">() {
+  </code><code style="color:#569cd6">return</code> <code style="color:#d4d4d4">(
+    &lt;div&gt;
+      &lt;TarjetaProducto nombre=</code><code style="color:#ce9178">"Teclado"</code> <code style="color:#d4d4d4">precio={</code><code style="color:#b5cea8">49.99</code><code style="color:#d4d4d4">} disponible={</code><code style="color:#569cd6">true</code><code style="color:#d4d4d4">} /&gt;
+      &lt;TarjetaProducto nombre=</code><code style="color:#ce9178">"Mouse"</code>   <code style="color:#d4d4d4">precio={</code><code style="color:#b5cea8">29.99</code><code style="color:#d4d4d4">} disponible={</code><code style="color:#569cd6">false</code><code style="color:#d4d4d4">} /&gt;
+    &lt;/div&gt;
+  );
+}</code></pre>
+
+      <h2>Estado con useState</h2>
+      <p>El <strong>estado</strong> es la memoria interna de un componente. Al llamar a la función actualizadora, React programa un re-renderizado y actualiza la UI automáticamente.</p>
+
+<pre><code style="color:#569cd6">import</code> <code style="color:#d4d4d4">{ useState } </code><code style="color:#569cd6">from</code> <code style="color:#ce9178">'react'</code><code style="color:#d4d4d4">;
+
+</code><code style="color:#569cd6">function</code> <code style="color:#dcdcaa">FormularioLogin</code><code style="color:#d4d4d4">() {
+  </code><code style="color:#569cd6">const</code> <code style="color:#d4d4d4">[email,    setEmail]    = useState(</code><code style="color:#ce9178">''</code><code style="color:#d4d4d4">);
+  </code><code style="color:#569cd6">const</code> <code style="color:#d4d4d4">[password, setPassword] = useState(</code><code style="color:#ce9178">''</code><code style="color:#d4d4d4">);
+  </code><code style="color:#569cd6">const</code> <code style="color:#d4d4d4">[error,    setError]    = useState(</code><code style="color:#569cd6">null</code><code style="color:#d4d4d4">);
+
+  </code><code style="color:#569cd6">function</code> <code style="color:#dcdcaa">manejarEnvio</code><code style="color:#d4d4d4">(e) {
+    e.preventDefault();
+    </code><code style="color:#569cd6">if</code> <code style="color:#d4d4d4">(!email || !password) {
+      setError(</code><code style="color:#ce9178">'Completa todos los campos'</code><code style="color:#d4d4d4">);
+      </code><code style="color:#569cd6">return</code><code style="color:#d4d4d4">;
+    }
+    setError(</code><code style="color:#569cd6">null</code><code style="color:#d4d4d4">);
+    </code><code style="color:#6a9955">// lógica de autenticación...</code>
+<code style="color:#d4d4d4">  }
+
+  </code><code style="color:#569cd6">return</code> <code style="color:#d4d4d4">(
+    &lt;form onSubmit={manejarEnvio}&gt;
+      &lt;input value={email}    onChange={e =&gt; setEmail(e.target.value)}    placeholder=</code><code style="color:#ce9178">"Email"</code>    <code style="color:#d4d4d4">/&gt;
+      &lt;input value={password} onChange={e =&gt; setPassword(e.target.value)} placeholder=</code><code style="color:#ce9178">"Password"</code> <code style="color:#d4d4d4">type=</code><code style="color:#ce9178">"password"</code> <code style="color:#d4d4d4">/&gt;
+      {error &amp;&amp; &lt;p style={{ color: </code><code style="color:#ce9178">'red'</code> <code style="color:#d4d4d4">}}&gt;{error}&lt;/p&gt;}
+      &lt;button type=</code><code style="color:#ce9178">"submit"</code><code style="color:#d4d4d4">&gt;Ingresar&lt;/button&gt;
+    &lt;/form&gt;
+  );
+}</code></pre>
+
+      <h2>Efectos con useEffect</h2>
+      <p><code>useEffect</code> permite ejecutar código con <strong>efectos secundarios</strong> (fetch de datos, suscripciones, manipulación del DOM) sincronizados con el ciclo de vida del componente.</p>
+
+<pre><code style="color:#569cd6">import</code> <code style="color:#d4d4d4">{ useState, useEffect } </code><code style="color:#569cd6">from</code> <code style="color:#ce9178">'react'</code><code style="color:#d4d4d4">;
+
+</code><code style="color:#569cd6">function</code> <code style="color:#dcdcaa">TituloDocumento</code><code style="color:#d4d4d4">({ titulo }) {
+  useEffect(() =&gt; {
+    document.title = titulo;          </code><code style="color:#6a9955">// efecto secundario</code>
+<code style="color:#d4d4d4">    </code><code style="color:#569cd6">return</code> <code style="color:#d4d4d4">() =&gt; { document.title = </code><code style="color:#ce9178">'App'</code><code style="color:#d4d4d4">; };  </code><code style="color:#6a9955">// limpieza al desmontar</code>
+<code style="color:#d4d4d4">  }, [titulo]);                        </code><code style="color:#6a9955">// se re-ejecuta solo si `titulo` cambia</code>
+<code style="color:#d4d4d4">
+  </code><code style="color:#569cd6">return</code> <code style="color:#d4d4d4">&lt;h1&gt;{titulo}&lt;/h1&gt;;
+}</code></pre>
+
+      <table style="width: 100%; border-collapse: collapse; margin: 2rem 0; background: rgba(0,0,0,0.2); border-radius: 8px;">
+        <thead style="background: rgba(139, 92, 246, 0.12); color: #fff;">
+          <tr>
+            <th style="padding: 1rem; text-align: left;">Dependencias de useEffect</th>
+            <th style="padding: 1rem; text-align: left;">Comportamiento</th>
+          </tr>
+        </thead>
+        <tbody style="color: #a0a8b5; font-size: 0.93rem;">
+          <tr style="border-bottom: 1px solid rgba(255,255,255,0.05);">
+            <td style="padding: 1rem;"><code>useEffect(fn)</code> — sin array</td>
+            <td style="padding: 1rem;">Se ejecuta después de cada renderizado.</td>
+          </tr>
+          <tr style="border-bottom: 1px solid rgba(255,255,255,0.05);">
+            <td style="padding: 1rem;"><code>useEffect(fn, [])</code> — array vacío</td>
+            <td style="padding: 1rem;">Se ejecuta solo una vez al montar el componente.</td>
+          </tr>
+          <tr>
+            <td style="padding: 1rem;"><code>useEffect(fn, [a, b])</code></td>
+            <td style="padding: 1rem;">Se ejecuta cuando <code>a</code> o <code>b</code> cambian.</td>
+          </tr>
+        </tbody>
+      </table>
+
+      <h2>Renderizado de Listas</h2>
+      <p>Para renderizar colecciones, se usa <code>Array.map()</code>. Cada elemento debe tener una prop <code>key</code> única para que React identifique cambios eficientemente.</p>
+
+<pre><code style="color:#569cd6">const</code> <code style="color:#d4d4d4">productos = [
+  { id: </code><code style="color:#b5cea8">1</code><code style="color:#d4d4d4">, nombre: </code><code style="color:#ce9178">'Teclado'</code><code style="color:#d4d4d4">,  precio: </code><code style="color:#b5cea8">49.99</code> <code style="color:#d4d4d4">},
+  { id: </code><code style="color:#b5cea8">2</code><code style="color:#d4d4d4">, nombre: </code><code style="color:#ce9178">'Monitor'</code><code style="color:#d4d4d4">, precio: </code><code style="color:#b5cea8">299.99</code> <code style="color:#d4d4d4">},
+];
+
+</code><code style="color:#569cd6">function</code> <code style="color:#dcdcaa">ListaProductos</code><code style="color:#d4d4d4">() {
+  </code><code style="color:#569cd6">return</code> <code style="color:#d4d4d4">(
+    &lt;ul&gt;
+      {productos.map(p =&gt; (
+        &lt;li key={p.id}&gt;{p.nombre} — ${p.precio}&lt;/li&gt;
+      ))}
+    &lt;/ul&gt;
+  );
+}</code></pre>
+
+      <h2>Comunicación Hijo → Padre (Callbacks)</h2>
+      <p>Para que un hijo notifique un evento al padre, el padre le pasa una <strong>función como prop</strong>. El hijo la invoca cuando ocurre el evento.</p>
+
+<pre><code style="color:#6a9955">// Hijo</code>
+<code style="color:#569cd6">function</code> <code style="color:#dcdcaa">BotonEliminar</code><code style="color:#d4d4d4">({ id, onEliminar }) {
+  </code><code style="color:#569cd6">return</code> <code style="color:#d4d4d4">&lt;button onClick={() =&gt; onEliminar(id)}&gt;Eliminar&lt;/button&gt;;
+}
+
+</code><code style="color:#6a9955">// Padre</code>
+<code style="color:#569cd6">function</code> <code style="color:#dcdcaa">App</code><code style="color:#d4d4d4">() {
+  </code><code style="color:#569cd6">const</code> <code style="color:#d4d4d4">[items, setItems] = useState([</code><code style="color:#b5cea8">1</code><code style="color:#d4d4d4">, </code><code style="color:#b5cea8">2</code><code style="color:#d4d4d4">, </code><code style="color:#b5cea8">3</code><code style="color:#d4d4d4">]);
+
+  </code><code style="color:#569cd6">function</code> <code style="color:#dcdcaa">eliminar</code><code style="color:#d4d4d4">(id) {
+    setItems(prev =&gt; prev.filter(i =&gt; i !== id));
+  }
+
+  </code><code style="color:#569cd6">return</code> <code style="color:#d4d4d4">(
+    &lt;div&gt;
+      {items.map(id =&gt; (
+        &lt;BotonEliminar key={id} id={id} onEliminar={eliminar} /&gt;
+      ))}
+    &lt;/div&gt;
+  );
+}</code></pre>
+
+      <p style="background: rgba(139,92,246,0.08); padding: 1.2rem; border-radius: 8px; border-left: 4px solid #8b5cf6;"><strong>Regla de oro:</strong> Los datos fluyen hacia abajo (<em>props</em>), los eventos fluyen hacia arriba (<em>callbacks</em>). Este patrón unidireccional hace que la aplicación sea predecible y fácil de depurar.</p>
+
+      <div class="page-nav">
+        <a href="/m6-intro-react.html" class="nav-btn">← Introducción a React</a>
+        <a href="/m6-local-storage.html" class="nav-btn next" style="background: #8b5cf6;">3. Local Storage →</a>
+      </div>
+    </article>
+  </main>
+
+  <footer>
+    <p>© 2026 German Mardones. Todos los derechos reservados.</p>
+  </footer>
+
+  <script>
+    function toggleTheme() {
+      const body = document.body;
+      const currentTheme = body.getAttribute('data-theme') || 'dark';
+      const newTheme = currentTheme === 'light' ? 'dark' : 'light';
+      if (newTheme === 'dark') { body.removeAttribute('data-theme'); }
+      else { body.setAttribute('data-theme', 'light'); }
+      localStorage.setItem('theme', newTheme);
+    }
+    const savedTheme = localStorage.getItem('theme');
+    if (savedTheme === 'dark') { document.body.removeAttribute('data-theme'); }
+    else if (savedTheme === 'light') { document.body.setAttribute('data-theme', 'light'); }
+  </script>
+</body>
+</html>

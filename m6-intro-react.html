@@ -1,0 +1,202 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Introducción a React | Módulo 6 | TI3032</title>
+  <link rel="stylesheet" href="/style.css">
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;800&display=swap" rel="stylesheet">
+  <!-- Google tag (gtag.js) -->
+  <script async src="https://www.googletagmanager.com/gtag/js?id=G-LZ7J61LLCM"></script>
+  <script>
+    window.dataLayer = window.dataLayer || [];
+    function gtag(){dataLayer.push(arguments);}
+    gtag('js', new Date());
+    gtag('config', 'G-LZ7J61LLCM');
+  </script>
+</head>
+<body>
+  <div class="glass-background"></div>
+  <main class="container content-wrapper">
+    <div class="nav-header">
+      <a href="/index.html" class="back-link">← Volver al Menú Principal</a>
+      <div style="display: flex; gap: 1rem; align-items: center;">
+        <button onclick="toggleTheme()" class="nav-btn" style="padding: 0.3rem 0.8rem; font-size: 1.2rem; background: transparent; border: 1px solid var(--card-border); cursor: pointer; border-radius: 50px; color: var(--text-primary); display: flex; align-items: center; justify-content: center; width: 38px; height: 38px; transition: all 0.3s;" aria-label="Cambiar tema">🌓</button>
+        <span class="badge" style="padding: 0.3rem 1rem; border-radius: 50px; background: rgba(139, 92, 246, 0.15); color: #8b5cf6; font-size: 0.8rem; font-weight: 600; border: 1px solid rgba(139, 92, 246, 0.3); margin-bottom: 0;">MÓDULO 06</span>
+      </div>
+    </div>
+
+    <article class="page-card">
+      <h1>1. Introducción a React</h1>
+
+      <p><strong>React</strong> es una biblioteca JavaScript de código abierto desarrollada por Meta (Facebook) desde 2013. Su propósito es construir <strong>interfaces de usuario interactivas</strong> a partir de piezas reutilizables llamadas <em>componentes</em>. A diferencia de frameworks MVC tradicionales, React se centra únicamente en la capa de vista (la "V" del modelo MVC), delegando enrutamiento, estado global y llamadas a APIs a librerías complementarias.</p>
+
+      <h2>¿Por qué React?</h2>
+
+      <div class="visual-comparison" style="margin: 2rem 0">
+        <div class="comparison-side sql" style="border-top-color: #8b5cf6">
+          <p style="color: #8b5cf6; font-weight: 600; margin-bottom: 0.5rem">Antes de React — manipulación directa del DOM:</p>
+<pre><code style="color:#6a9955">// Actualizar el DOM manualmente es propenso a errores</code>
+<code style="color:#d4d4d4">document.getElementById(</code><code style="color:#ce9178">'contador'</code><code style="color:#d4d4d4">).innerText = </code><code style="color:#b5cea8">0</code><code style="color:#d4d4d4">;
+document.getElementById(</code><code style="color:#ce9178">'btn'</code><code style="color:#d4d4d4">)
+  .addEventListener(</code><code style="color:#ce9178">'click'</code><code style="color:#d4d4d4">, () => {
+    </code><code style="color:#569cd6">let</code> <code style="color:#d4d4d4">n = +document.getElementById(</code><code style="color:#ce9178">'contador'</code><code style="color:#d4d4d4">).innerText;
+    document.getElementById(</code><code style="color:#ce9178">'contador'</code><code style="color:#d4d4d4">).innerText = n + </code><code style="color:#b5cea8">1</code><code style="color:#d4d4d4">;
+  });</code></pre>
+        </div>
+        <div class="comparison-side nosql" style="border-top-color: #34d399">
+          <p style="color: #34d399; font-weight: 600; margin-bottom: 0.5rem">Con React — declarativo y reactivo:</p>
+<pre><code style="color:#569cd6">import</code> <code style="color:#d4d4d4">{ useState } </code><code style="color:#569cd6">from</code> <code style="color:#ce9178">'react'</code><code style="color:#d4d4d4">;
+
+</code><code style="color:#569cd6">function</code> <code style="color:#dcdcaa">Contador</code><code style="color:#d4d4d4">() {
+  </code><code style="color:#569cd6">const</code> <code style="color:#d4d4d4">[n, setN] = useState(</code><code style="color:#b5cea8">0</code><code style="color:#d4d4d4">);
+  </code><code style="color:#569cd6">return</code> <code style="color:#d4d4d4">&lt;button onClick={() =&gt; setN(n + </code><code style="color:#b5cea8">1</code><code style="color:#d4d4d4">)}&gt;{n}&lt;/button&gt;;
+}</code></pre>
+        </div>
+      </div>
+
+      <h2>Conceptos Fundamentales</h2>
+
+      <table style="width: 100%; border-collapse: collapse; margin: 2rem 0; background: rgba(0,0,0,0.2); border-radius: 8px;">
+        <thead style="background: rgba(139, 92, 246, 0.12); color: #fff;">
+          <tr>
+            <th style="padding: 1rem; text-align: left;">Concepto</th>
+            <th style="padding: 1rem; text-align: left;">Descripción</th>
+          </tr>
+        </thead>
+        <tbody style="color: #a0a8b5; font-size: 0.93rem;">
+          <tr style="border-bottom: 1px solid rgba(255,255,255,0.05);">
+            <td style="padding: 1rem; color: #d4d4d4;">Virtual DOM</td>
+            <td style="padding: 1rem;">React mantiene una copia liviana del DOM en memoria. Cuando el estado cambia, calcula las diferencias (<em>diffing</em>) y solo actualiza lo que realmente cambió en el DOM real.</td>
+          </tr>
+          <tr style="border-bottom: 1px solid rgba(255,255,255,0.05);">
+            <td style="padding: 1rem; color: #d4d4d4;">JSX</td>
+            <td style="padding: 1rem;">Sintaxis que combina JavaScript con marcado similar a HTML. No es obligatorio pero sí la convención estándar. Babel lo transpila a <code>React.createElement()</code> bajo el capó.</td>
+          </tr>
+          <tr style="border-bottom: 1px solid rgba(255,255,255,0.05);">
+            <td style="padding: 1rem; color: #d4d4d4;">Componentes</td>
+            <td style="padding: 1rem;">Funciones (o clases) que reciben datos (<em>props</em>) y retornan JSX. Son la unidad de construcción de toda UI en React.</td>
+          </tr>
+          <tr style="border-bottom: 1px solid rgba(255,255,255,0.05);">
+            <td style="padding: 1rem; color: #d4d4d4;">Estado (State)</td>
+            <td style="padding: 1rem;">Datos internos de un componente que, al cambiar, provocan un re-renderizado. Se gestiona con el hook <code>useState</code>.</td>
+          </tr>
+          <tr>
+            <td style="padding: 1rem; color: #d4d4d4;">Props</td>
+            <td style="padding: 1rem;">Datos que el componente padre pasa al hijo. Son de solo lectura desde el componente hijo — el flujo es siempre de padre a hijo (<em>one-way data flow</em>).</td>
+          </tr>
+        </tbody>
+      </table>
+
+      <h2>Crear un Proyecto con Vite</h2>
+      <p>La forma recomendada en 2024–2025 es usar <strong>Vite</strong> como bundler y servidor de desarrollo. Es significativamente más rápido que Create React App (CRA), que ya no recibe mantenimiento activo.</p>
+
+<pre><code style="color:#6a9955"># Crear proyecto React con Vite</code>
+<code style="color:#d4d4d4">npm create vite@latest mi-app </code><code style="color:#ce9178">-- --template react</code>
+<code style="color:#d4d4d4">cd mi-app
+npm install
+npm run dev</code></pre>
+
+      <p>La estructura generada es:</p>
+
+<pre><code style="color:#d4d4d4">mi-app/
+├── public/          </code><code style="color:#6a9955"># archivos estáticos</code>
+<code style="color:#d4d4d4">├── src/
+│   ├── assets/      </code><code style="color:#6a9955"># imágenes, íconos</code>
+<code style="color:#d4d4d4">│   ├── App.jsx      </code><code style="color:#6a9955"># componente raíz</code>
+<code style="color:#d4d4d4">│   └── main.jsx     </code><code style="color:#6a9955"># punto de entrada</code>
+<code style="color:#d4d4d4">├── index.html
+├── vite.config.js
+└── package.json</code></pre>
+
+      <h2>El Primer Componente</h2>
+      <p>Un componente funcional es simplemente una función de JavaScript que retorna JSX. Por convención, su nombre comienza con mayúscula.</p>
+
+<pre><code style="color:#6a9955">// src/components/Saludo.jsx</code>
+<code style="color:#569cd6">function</code> <code style="color:#dcdcaa">Saludo</code><code style="color:#d4d4d4">({ nombre }) {
+  </code><code style="color:#569cd6">return</code> <code style="color:#d4d4d4">(
+    &lt;div&gt;
+      &lt;h2&gt;Hola, {nombre}!&lt;/h2&gt;
+      &lt;p&gt;Bienvenido a React.&lt;/p&gt;
+    &lt;/div&gt;
+  );
+}
+
+</code><code style="color:#569cd6">export default</code> <code style="color:#d4d4d4">Saludo;</code></pre>
+
+<pre><code style="color:#6a9955">// src/App.jsx — uso del componente</code>
+<code style="color:#569cd6">import</code> <code style="color:#d4d4d4">Saludo </code><code style="color:#569cd6">from</code> <code style="color:#ce9178">'./components/Saludo'</code><code style="color:#d4d4d4">;
+
+</code><code style="color:#569cd6">function</code> <code style="color:#dcdcaa">App</code><code style="color:#d4d4d4">() {
+  </code><code style="color:#569cd6">return</code> <code style="color:#d4d4d4">&lt;Saludo nombre=</code><code style="color:#ce9178">"Estudiante"</code> <code style="color:#d4d4d4">/&gt;;
+}
+
+</code><code style="color:#569cd6">export default</code> <code style="color:#d4d4d4">App;</code></pre>
+
+      <h2>React vs. Otros Frameworks</h2>
+
+      <table style="width: 100%; border-collapse: collapse; margin: 2rem 0; background: rgba(0,0,0,0.2); border-radius: 8px;">
+        <thead style="background: rgba(139, 92, 246, 0.12); color: #fff;">
+          <tr>
+            <th style="padding: 1rem; text-align: left;">Característica</th>
+            <th style="padding: 1rem; text-align: center;">React</th>
+            <th style="padding: 1rem; text-align: center;">Vue 3</th>
+            <th style="padding: 1rem; text-align: center;">Angular</th>
+          </tr>
+        </thead>
+        <tbody style="color: #a0a8b5; font-size: 0.93rem; text-align: center;">
+          <tr style="border-bottom: 1px solid rgba(255,255,255,0.05);">
+            <td style="padding: 1rem; color: #d4d4d4; text-align: left;">Tipo</td>
+            <td style="padding: 1rem;">Biblioteca</td>
+            <td style="padding: 1rem;">Framework progresivo</td>
+            <td style="padding: 1rem;">Framework completo</td>
+          </tr>
+          <tr style="border-bottom: 1px solid rgba(255,255,255,0.05);">
+            <td style="padding: 1rem; color: #d4d4d4; text-align: left;">Lenguaje base</td>
+            <td style="padding: 1rem;">JSX (JS + HTML)</td>
+            <td style="padding: 1rem;">SFC (.vue)</td>
+            <td style="padding: 1rem;">TypeScript</td>
+          </tr>
+          <tr style="border-bottom: 1px solid rgba(255,255,255,0.05);">
+            <td style="padding: 1rem; color: #d4d4d4; text-align: left;">Curva de aprendizaje</td>
+            <td style="padding: 1rem;">Media</td>
+            <td style="padding: 1rem;">Baja</td>
+            <td style="padding: 1rem;">Alta</td>
+          </tr>
+          <tr>
+            <td style="padding: 1rem; color: #d4d4d4; text-align: left;">Ecosistema</td>
+            <td style="padding: 1rem;">Muy grande</td>
+            <td style="padding: 1rem;">Grande</td>
+            <td style="padding: 1rem;">Grande</td>
+          </tr>
+        </tbody>
+      </table>
+
+      <p style="background: rgba(139,92,246,0.08); padding: 1.2rem; border-radius: 8px; border-left: 4px solid #8b5cf6;"><strong>Dato clave:</strong> React es la biblioteca frontend más demandada en el mercado laboral. Según el State of JS 2024, más del 80% de los desarrolladores que la han usado continuarían usándola. Su dominio del ecosistema se traduce directamente en oportunidades laborales.</p>
+
+      <div class="page-nav">
+        <a href="/index.html" class="nav-btn">← Menú Principal</a>
+        <a href="/m6-componentes.html" class="nav-btn next" style="background: #8b5cf6;">2. Componentes →</a>
+      </div>
+    </article>
+  </main>
+
+  <footer>
+    <p>© 2026 German Mardones. Todos los derechos reservados.</p>
+  </footer>
+
+  <script>
+    function toggleTheme() {
+      const body = document.body;
+      const currentTheme = body.getAttribute('data-theme') || 'dark';
+      const newTheme = currentTheme === 'light' ? 'dark' : 'light';
+      if (newTheme === 'dark') { body.removeAttribute('data-theme'); }
+      else { body.setAttribute('data-theme', 'light'); }
+      localStorage.setItem('theme', newTheme);
+    }
+    const savedTheme = localStorage.getItem('theme');
+    if (savedTheme === 'dark') { document.body.removeAttribute('data-theme'); }
+    else if (savedTheme === 'light') { document.body.setAttribute('data-theme', 'light'); }
+  </script>
+</body>
+</html>

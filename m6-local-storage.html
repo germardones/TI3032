@@ -1,0 +1,194 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Local Storage en React | Módulo 6 | TI3032</title>
+  <link rel="stylesheet" href="/style.css">
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;800&display=swap" rel="stylesheet">
+  <script async src="https://www.googletagmanager.com/gtag/js?id=G-LZ7J61LLCM"></script>
+  <script>
+    window.dataLayer = window.dataLayer || [];
+    function gtag(){dataLayer.push(arguments);}
+    gtag('js', new Date());
+    gtag('config', 'G-LZ7J61LLCM');
+  </script>
+</head>
+<body>
+  <div class="glass-background"></div>
+  <main class="container content-wrapper">
+    <div class="nav-header">
+      <a href="/index.html" class="back-link">← Volver al Menú Principal</a>
+      <div style="display: flex; gap: 1rem; align-items: center;">
+        <button onclick="toggleTheme()" class="nav-btn" style="padding: 0.3rem 0.8rem; font-size: 1.2rem; background: transparent; border: 1px solid var(--card-border); cursor: pointer; border-radius: 50px; color: var(--text-primary); display: flex; align-items: center; justify-content: center; width: 38px; height: 38px; transition: all 0.3s;" aria-label="Cambiar tema">🌓</button>
+        <span class="badge" style="padding: 0.3rem 1rem; border-radius: 50px; background: rgba(139, 92, 246, 0.15); color: #8b5cf6; font-size: 0.8rem; font-weight: 600; border: 1px solid rgba(139, 92, 246, 0.3); margin-bottom: 0;">MÓDULO 06</span>
+      </div>
+    </div>
+
+    <article class="page-card">
+      <h1>3. Local Storage</h1>
+
+      <p><strong>Local Storage</strong> es una API del navegador que permite guardar datos de forma persistente en el dispositivo del usuario, incluso después de cerrar la pestaña o el navegador. A diferencia de las variables de estado de React (que se pierden al recargar), Local Storage sobrevive entre sesiones.</p>
+
+      <h2>API Nativa del Navegador</h2>
+      <p>Local Storage almacena pares <em>clave–valor</em> como <strong>strings</strong>. Para guardar objetos complejos, se usa <code>JSON.stringify()</code> al escribir y <code>JSON.parse()</code> al leer.</p>
+
+<pre><code style="color:#6a9955">// Escribir</code>
+<code style="color:#d4d4d4">localStorage.setItem(</code><code style="color:#ce9178">'usuario'</code><code style="color:#d4d4d4">, </code><code style="color:#ce9178">'Ana'</code><code style="color:#d4d4d4">);
+localStorage.setItem(</code><code style="color:#ce9178">'preferencias'</code><code style="color:#d4d4d4">, JSON.stringify({ tema: </code><code style="color:#ce9178">'oscuro'</code><code style="color:#d4d4d4">, idioma: </code><code style="color:#ce9178">'es'</code> <code style="color:#d4d4d4">}));
+
+</code><code style="color:#6a9955">// Leer</code>
+<code style="color:#569cd6">const</code> <code style="color:#d4d4d4">nombre = localStorage.getItem(</code><code style="color:#ce9178">'usuario'</code><code style="color:#d4d4d4">);                          </code><code style="color:#6a9955">// 'Ana'</code>
+<code style="color:#569cd6">const</code> <code style="color:#d4d4d4">prefs  = JSON.parse(localStorage.getItem(</code><code style="color:#ce9178">'preferencias'</code><code style="color:#d4d4d4">));     </code><code style="color:#6a9955">// { tema: 'oscuro', ... }</code>
+
+<code style="color:#6a9955">// Eliminar una clave</code>
+<code style="color:#d4d4d4">localStorage.removeItem(</code><code style="color:#ce9178">'usuario'</code><code style="color:#d4d4d4">);
+
+</code><code style="color:#6a9955">// Limpiar todo</code>
+<code style="color:#d4d4d4">localStorage.clear();</code></pre>
+
+      <h2>Integración con React: Hook Personalizado</h2>
+      <p>El patrón más limpio es encapsular la lógica de Local Storage en un <strong>hook personalizado</strong> que sincroniza el estado de React con el almacenamiento del navegador automáticamente.</p>
+
+<pre><code style="color:#6a9955">// src/hooks/useLocalStorage.js</code>
+<code style="color:#569cd6">import</code> <code style="color:#d4d4d4">{ useState } </code><code style="color:#569cd6">from</code> <code style="color:#ce9178">'react'</code><code style="color:#d4d4d4">;
+
+</code><code style="color:#569cd6">function</code> <code style="color:#dcdcaa">useLocalStorage</code><code style="color:#d4d4d4">(clave, valorInicial) {
+  </code><code style="color:#569cd6">const</code> <code style="color:#d4d4d4">[valor, setValor] = useState(() =&gt; {
+    </code><code style="color:#569cd6">try</code> <code style="color:#d4d4d4">{
+      </code><code style="color:#569cd6">const</code> <code style="color:#d4d4d4">guardado = localStorage.getItem(clave);
+      </code><code style="color:#569cd6">return</code> <code style="color:#d4d4d4">guardado !== </code><code style="color:#569cd6">null</code> <code style="color:#d4d4d4">? JSON.parse(guardado) : valorInicial;
+    } </code><code style="color:#569cd6">catch</code> <code style="color:#d4d4d4">{
+      </code><code style="color:#569cd6">return</code> <code style="color:#d4d4d4">valorInicial;
+    }
+  });
+
+  </code><code style="color:#569cd6">function</code> <code style="color:#dcdcaa">guardar</code><code style="color:#d4d4d4">(nuevoValor) {
+    </code><code style="color:#569cd6">try</code> <code style="color:#d4d4d4">{
+      setValor(nuevoValor);
+      localStorage.setItem(clave, JSON.stringify(nuevoValor));
+    } </code><code style="color:#569cd6">catch</code> <code style="color:#d4d4d4">(err) {
+      console.error(</code><code style="color:#ce9178">'Error al guardar en localStorage:'</code><code style="color:#d4d4d4">, err);
+    }
+  }
+
+  </code><code style="color:#569cd6">return</code> <code style="color:#d4d4d4">[valor, guardar];
+}
+
+</code><code style="color:#569cd6">export default</code> <code style="color:#d4d4d4">useLocalStorage;</code></pre>
+
+<pre><code style="color:#6a9955">// Uso del hook en cualquier componente</code>
+<code style="color:#569cd6">import</code> <code style="color:#d4d4d4">useLocalStorage </code><code style="color:#569cd6">from</code> <code style="color:#ce9178">'./hooks/useLocalStorage'</code><code style="color:#d4d4d4">;
+
+</code><code style="color:#569cd6">function</code> <code style="color:#dcdcaa">SelectorTema</code><code style="color:#d4d4d4">() {
+  </code><code style="color:#569cd6">const</code> <code style="color:#d4d4d4">[tema, setTema] = useLocalStorage(</code><code style="color:#ce9178">'tema'</code><code style="color:#d4d4d4">, </code><code style="color:#ce9178">'claro'</code><code style="color:#d4d4d4">);
+
+  </code><code style="color:#569cd6">return</code> <code style="color:#d4d4d4">(
+    &lt;button onClick={() =&gt; setTema(tema === </code><code style="color:#ce9178">'claro'</code> <code style="color:#d4d4d4">? </code><code style="color:#ce9178">'oscuro'</code> <code style="color:#d4d4d4">: </code><code style="color:#ce9178">'claro'</code><code style="color:#d4d4d4">)}&gt;
+      Tema actual: {tema}
+    &lt;/button&gt;
+  );
+}</code></pre>
+
+      <h2>Caso Práctico: Lista de Tareas Persistente</h2>
+
+<pre><code style="color:#569cd6">import</code> <code style="color:#d4d4d4">useLocalStorage </code><code style="color:#569cd6">from</code> <code style="color:#ce9178">'./hooks/useLocalStorage'</code><code style="color:#d4d4d4">;
+
+</code><code style="color:#569cd6">function</code> <code style="color:#dcdcaa">TodoApp</code><code style="color:#d4d4d4">() {
+  </code><code style="color:#569cd6">const</code> <code style="color:#d4d4d4">[tareas,  setTareas]  = useLocalStorage(</code><code style="color:#ce9178">'tareas'</code><code style="color:#d4d4d4">, []);
+  </code><code style="color:#569cd6">const</code> <code style="color:#d4d4d4">[nuevaTarea, setNuevaTarea] = useState(</code><code style="color:#ce9178">''</code><code style="color:#d4d4d4">);
+
+  </code><code style="color:#569cd6">function</code> <code style="color:#dcdcaa">agregar</code><code style="color:#d4d4d4">() {
+    </code><code style="color:#569cd6">if</code> <code style="color:#d4d4d4">(!nuevaTarea.trim()) </code><code style="color:#569cd6">return</code><code style="color:#d4d4d4">;
+    setTareas([...tareas, { id: Date.now(), texto: nuevaTarea, hecha: </code><code style="color:#569cd6">false</code> <code style="color:#d4d4d4">}]);
+    setNuevaTarea(</code><code style="color:#ce9178">''</code><code style="color:#d4d4d4">);
+  }
+
+  </code><code style="color:#569cd6">function</code> <code style="color:#dcdcaa">toggleHecha</code><code style="color:#d4d4d4">(id) {
+    setTareas(tareas.map(t =&gt; t.id === id ? { ...t, hecha: !t.hecha } : t));
+  }
+
+  </code><code style="color:#569cd6">return</code> <code style="color:#d4d4d4">(
+    &lt;div&gt;
+      &lt;input value={nuevaTarea} onChange={e =&gt; setNuevaTarea(e.target.value)} /&gt;
+      &lt;button onClick={agregar}&gt;Agregar&lt;/button&gt;
+      &lt;ul&gt;
+        {tareas.map(t =&gt; (
+          &lt;li key={t.id}
+              onClick={() =&gt; toggleHecha(t.id)}
+              style={{ textDecoration: t.hecha ? </code><code style="color:#ce9178">'line-through'</code> <code style="color:#d4d4d4">: </code><code style="color:#ce9178">'none'</code> <code style="color:#d4d4d4">}}&gt;
+            {t.texto}
+          &lt;/li&gt;
+        ))}
+      &lt;/ul&gt;
+    &lt;/div&gt;
+  );
+}</code></pre>
+
+      <h2>Local Storage vs. Otras Opciones de Almacenamiento</h2>
+
+      <table style="width: 100%; border-collapse: collapse; margin: 2rem 0; background: rgba(0,0,0,0.2); border-radius: 8px;">
+        <thead style="background: rgba(139, 92, 246, 0.12); color: #fff;">
+          <tr>
+            <th style="padding: 1rem; text-align: left;">Mecanismo</th>
+            <th style="padding: 1rem; text-align: left;">Persistencia</th>
+            <th style="padding: 1rem; text-align: left;">Capacidad</th>
+            <th style="padding: 1rem; text-align: left;">Uso típico</th>
+          </tr>
+        </thead>
+        <tbody style="color: #a0a8b5; font-size: 0.93rem;">
+          <tr style="border-bottom: 1px solid rgba(255,255,255,0.05);">
+            <td style="padding: 1rem; color: #d4d4d4;">useState</td>
+            <td style="padding: 1rem;">Solo en memoria</td>
+            <td style="padding: 1rem;">Ilimitada (RAM)</td>
+            <td style="padding: 1rem;">Estado temporal de la UI</td>
+          </tr>
+          <tr style="border-bottom: 1px solid rgba(255,255,255,0.05);">
+            <td style="padding: 1rem; color: #d4d4d4;">Local Storage</td>
+            <td style="padding: 1rem;">Permanente (sin expiración)</td>
+            <td style="padding: 1rem;">~5 MB</td>
+            <td style="padding: 1rem;">Preferencias, tokens, caché</td>
+          </tr>
+          <tr style="border-bottom: 1px solid rgba(255,255,255,0.05);">
+            <td style="padding: 1rem; color: #d4d4d4;">Session Storage</td>
+            <td style="padding: 1rem;">Solo mientras dure la pestaña</td>
+            <td style="padding: 1rem;">~5 MB</td>
+            <td style="padding: 1rem;">Datos de la sesión activa</td>
+          </tr>
+          <tr>
+            <td style="padding: 1rem; color: #d4d4d4;">IndexedDB</td>
+            <td style="padding: 1rem;">Permanente</td>
+            <td style="padding: 1rem;">Cientos de MB</td>
+            <td style="padding: 1rem;">Datos complejos / offline</td>
+          </tr>
+        </tbody>
+      </table>
+
+      <p style="background: rgba(239,68,68,0.08); padding: 1.2rem; border-radius: 8px; border-left: 4px solid #ef4444;"><strong>Advertencia de seguridad:</strong> Nunca almacenes contraseñas, tokens de acceso de alta sensibilidad ni datos personales críticos en Local Storage. Es accesible a cualquier script JavaScript en la página, lo que lo hace vulnerable a ataques XSS.</p>
+
+      <div class="page-nav">
+        <a href="/m6-componentes.html" class="nav-btn">← Componentes</a>
+        <a href="/m6-api-fetch.html" class="nav-btn next" style="background: #8b5cf6;">4. API y Fetch →</a>
+      </div>
+    </article>
+  </main>
+
+  <footer>
+    <p>© 2026 German Mardones. Todos los derechos reservados.</p>
+  </footer>
+
+  <script>
+    function toggleTheme() {
+      const body = document.body;
+      const currentTheme = body.getAttribute('data-theme') || 'dark';
+      const newTheme = currentTheme === 'light' ? 'dark' : 'light';
+      if (newTheme === 'dark') { body.removeAttribute('data-theme'); }
+      else { body.setAttribute('data-theme', 'light'); }
+      localStorage.setItem('theme', newTheme);
+    }
+    const savedTheme = localStorage.getItem('theme');
+    if (savedTheme === 'dark') { document.body.removeAttribute('data-theme'); }
+    else if (savedTheme === 'light') { document.body.setAttribute('data-theme', 'light'); }
+  </script>
+</body>
+</html>

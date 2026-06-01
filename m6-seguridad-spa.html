@@ -1,0 +1,222 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Seguridad en SPA con React | Módulo 6 | TI3032</title>
+  <link rel="stylesheet" href="/style.css">
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;800&display=swap" rel="stylesheet">
+  <script async src="https://www.googletagmanager.com/gtag/js?id=G-LZ7J61LLCM"></script>
+  <script>
+    window.dataLayer = window.dataLayer || [];
+    function gtag(){dataLayer.push(arguments);}
+    gtag('js', new Date());
+    gtag('config', 'G-LZ7J61LLCM');
+  </script>
+</head>
+<body>
+  <div class="glass-background"></div>
+  <main class="container content-wrapper">
+    <div class="nav-header">
+      <a href="/index.html" class="back-link">← Volver al Menú Principal</a>
+      <div style="display: flex; gap: 1rem; align-items: center;">
+        <button onclick="toggleTheme()" class="nav-btn" style="padding: 0.3rem 0.8rem; font-size: 1.2rem; background: transparent; border: 1px solid var(--card-border); cursor: pointer; border-radius: 50px; color: var(--text-primary); display: flex; align-items: center; justify-content: center; width: 38px; height: 38px; transition: all 0.3s;" aria-label="Cambiar tema">🌓</button>
+        <span class="badge" style="padding: 0.3rem 1rem; border-radius: 50px; background: rgba(139, 92, 246, 0.15); color: #8b5cf6; font-size: 0.8rem; font-weight: 600; border: 1px solid rgba(139, 92, 246, 0.3); margin-bottom: 0;">MÓDULO 06</span>
+      </div>
+    </div>
+
+    <article class="page-card">
+      <h1>6. Buenas Prácticas de Desarrollo Seguro en SPA</h1>
+
+      <p>Una <strong>SPA (Single Page Application)</strong> ejecuta toda su lógica en el navegador del usuario. Esto desplaza parte de la superficie de ataque al frontend, haciendo que la seguridad sea una responsabilidad compartida entre el equipo de backend y el de frontend. A continuación se revisan las amenazas más críticas y cómo mitigarlas en React.</p>
+
+      <h2>1. Cross-Site Scripting (XSS)</h2>
+      <p>XSS ocurre cuando un atacante inyecta código JavaScript malicioso que se ejecuta en el navegador de otro usuario. React protege automáticamente los valores que renderiza mediante <strong>escapado automático</strong>, pero existen excepciones peligrosas.</p>
+
+      <div class="visual-comparison" style="margin: 2rem 0">
+        <div class="comparison-side sql" style="border-top-color: #ef4444">
+          <p style="color: #ef4444; font-weight: 600; margin-bottom: 0.5rem">Vulnerable:</p>
+<pre><code style="color:#6a9955">// dangerouslySetInnerHTML sin sanitizar</code>
+<code style="color:#569cd6">function</code> <code style="color:#dcdcaa">Comentario</code><code style="color:#d4d4d4">({ texto }) {
+  </code><code style="color:#569cd6">return</code> <code style="color:#d4d4d4">&lt;p dangerouslySetInnerHTML=
+    {{ __html: texto }} /&gt;;
+  </code><code style="color:#6a9955">// Si texto = '&lt;img src=x onerror=alert(1)&gt;'
+  // ejecuta JavaScript del atacante</code>
+<code style="color:#d4d4d4">}</code></pre>
+        </div>
+        <div class="comparison-side nosql" style="border-top-color: #34d399">
+          <p style="color: #34d399; font-weight: 600; margin-bottom: 0.5rem">Seguro:</p>
+<pre><code style="color:#569cd6">import</code> <code style="color:#d4d4d4">DOMPurify </code><code style="color:#569cd6">from</code> <code style="color:#ce9178">'dompurify'</code><code style="color:#d4d4d4">;
+
+</code><code style="color:#569cd6">function</code> <code style="color:#dcdcaa">Comentario</code><code style="color:#d4d4d4">({ texto }) {
+  </code><code style="color:#569cd6">const</code> <code style="color:#d4d4d4">limpio = DOMPurify.sanitize(texto);
+  </code><code style="color:#569cd6">return</code> <code style="color:#d4d4d4">&lt;p dangerouslySetInnerHTML=
+    {{ __html: limpio }} /&gt;;
+}</code></pre>
+        </div>
+      </div>
+
+      <p style="background: rgba(52,211,153,0.08); padding: 1.2rem; border-radius: 8px; border-left: 4px solid #34d399;"><strong>Regla general:</strong> Nunca usar <code>dangerouslySetInnerHTML</code> con datos provenientes del usuario sin sanitizar. Preferir siempre el renderizado estándar de React (<code>{variable}</code>), que escapa automáticamente.</p>
+
+      <h2>2. Gestión Segura de Tokens de Autenticación</h2>
+      <p>Los tokens JWT o tokens de sesión son el objetivo principal de los ataques XSS. El almacenamiento importa tanto como la autenticación misma.</p>
+
+      <table style="width: 100%; border-collapse: collapse; margin: 2rem 0; background: rgba(0,0,0,0.2); border-radius: 8px;">
+        <thead style="background: rgba(139, 92, 246, 0.12); color: #fff;">
+          <tr>
+            <th style="padding: 1rem; text-align: left;">Almacenamiento</th>
+            <th style="padding: 1rem; text-align: left;">Accesible por JS</th>
+            <th style="padding: 1rem; text-align: left;">Riesgo XSS</th>
+            <th style="padding: 1rem; text-align: left;">Riesgo CSRF</th>
+          </tr>
+        </thead>
+        <tbody style="color: #a0a8b5; font-size: 0.93rem;">
+          <tr style="border-bottom: 1px solid rgba(255,255,255,0.05);">
+            <td style="padding: 1rem; color: #d4d4d4;">localStorage</td>
+            <td style="padding: 1rem;">Sí</td>
+            <td style="padding: 1rem; color: #ef4444;">Alto</td>
+            <td style="padding: 1rem; color: #34d399;">Bajo</td>
+          </tr>
+          <tr style="border-bottom: 1px solid rgba(255,255,255,0.05);">
+            <td style="padding: 1rem; color: #d4d4d4;">sessionStorage</td>
+            <td style="padding: 1rem;">Sí</td>
+            <td style="padding: 1rem; color: #ef4444;">Alto</td>
+            <td style="padding: 1rem; color: #34d399;">Bajo</td>
+          </tr>
+          <tr>
+            <td style="padding: 1rem; color: #d4d4d4;">Cookie HttpOnly</td>
+            <td style="padding: 1rem;">No</td>
+            <td style="padding: 1rem; color: #34d399;">Bajo</td>
+            <td style="padding: 1rem; color: #f59e0b;">Medio (mitigar con SameSite)</td>
+          </tr>
+        </tbody>
+      </table>
+
+<pre><code style="color:#6a9955">// Configuración recomendada de cookie en el backend (Express.js)</code>
+<code style="color:#d4d4d4">res.cookie(</code><code style="color:#ce9178">'token'</code><code style="color:#d4d4d4">, jwt, {
+  httpOnly: </code><code style="color:#569cd6">true</code><code style="color:#d4d4d4">,   </code><code style="color:#6a9955">// no accesible desde JS</code>
+<code style="color:#d4d4d4">  secure:   </code><code style="color:#569cd6">true</code><code style="color:#d4d4d4">,   </code><code style="color:#6a9955">// solo HTTPS</code>
+<code style="color:#d4d4d4">  sameSite: </code><code style="color:#ce9178">'Strict'</code><code style="color:#d4d4d4">, </code><code style="color:#6a9955">// mitiga CSRF</code>
+<code style="color:#d4d4d4">  maxAge:   </code><code style="color:#b5cea8">3600000</code>    <code style="color:#6a9955">// 1 hora</code>
+<code style="color:#d4d4d4">});</code></pre>
+
+      <h2>3. Validación de Inputs</h2>
+      <p>Nunca confiar en los datos que llegan del usuario. La validación en el frontend mejora la UX, pero <strong>la validación real debe ocurrir en el backend</strong>.</p>
+
+<pre><code style="color:#6a9955">// Validación con React + librería Zod</code>
+<code style="color:#569cd6">import</code> <code style="color:#d4d4d4">{ z } </code><code style="color:#569cd6">from</code> <code style="color:#ce9178">'zod'</code><code style="color:#d4d4d4">;
+
+</code><code style="color:#569cd6">const</code> <code style="color:#d4d4d4">esquemaRegistro = z.object({
+  email:    z.string().email(</code><code style="color:#ce9178">'Email inválido'</code><code style="color:#d4d4d4">),
+  password: z.string()
+              .min(</code><code style="color:#b5cea8">8</code><code style="color:#d4d4d4">, </code><code style="color:#ce9178">'Mínimo 8 caracteres'</code><code style="color:#d4d4d4">)
+              .regex(/[A-Z]/, </code><code style="color:#ce9178">'Debe incluir una mayúscula'</code><code style="color:#d4d4d4">)
+              .regex(/[0-9]/, </code><code style="color:#ce9178">'Debe incluir un número'</code><code style="color:#d4d4d4">),
+  nombre:   z.string().min(</code><code style="color:#b5cea8">2</code><code style="color:#d4d4d4">).max(</code><code style="color:#b5cea8">50</code><code style="color:#d4d4d4">)
+});
+
+</code><code style="color:#569cd6">function</code> <code style="color:#dcdcaa">validarFormulario</code><code style="color:#d4d4d4">(datos) {
+  </code><code style="color:#569cd6">const</code> <code style="color:#d4d4d4">resultado = esquemaRegistro.safeParse(datos);
+  </code><code style="color:#569cd6">if</code> <code style="color:#d4d4d4">(!resultado.success) {
+    </code><code style="color:#569cd6">return</code> <code style="color:#d4d4d4">resultado.error.flatten().fieldErrors;
+  }
+  </code><code style="color:#569cd6">return null</code><code style="color:#d4d4d4">; </code><code style="color:#6a9955">// sin errores</code>
+<code style="color:#d4d4d4">}</code></pre>
+
+      <h2>4. Variables de Entorno y Secretos</h2>
+      <p>Las claves de API y configuraciones sensibles nunca deben hardcodearse en el código fuente. En Vite, las variables de entorno que comienzan con <code>VITE_</code> se exponen al bundle del cliente — solo deben contener datos no críticos.</p>
+
+<pre><code style="color:#6a9955"># .env.local — NO subir al repositorio (.gitignore)</code>
+<code style="color:#d4d4d4">VITE_API_URL=https://mi-api.com
+VITE_MAPAS_KEY=pk_publico_de_mapbox   </code><code style="color:#6a9955"># solo claves públicas aquí</code></pre>
+
+<pre><code style="color:#6a9955">// Acceso en React</code>
+<code style="color:#569cd6">const</code> <code style="color:#d4d4d4">apiUrl = import.meta.env.VITE_API_URL;
+
+</code><code style="color:#6a9955">// ❌ NUNCA hacer esto</code>
+<code style="color:#569cd6">const</code> <code style="color:#d4d4d4">secretKey = </code><code style="color:#ce9178">"sk_live_abc123..."</code><code style="color:#d4d4d4">; </code><code style="color:#6a9955">// visible en el bundle público</code></pre>
+
+      <h2>5. Protección de Rutas</h2>
+      <p>Las rutas privadas deben verificar el estado de autenticación antes de renderizar contenido sensible. El componente <code>RutaProtegida</code> es el patrón estándar en React Router.</p>
+
+<pre><code style="color:#569cd6">import</code> <code style="color:#d4d4d4">{ Navigate, Outlet } </code><code style="color:#569cd6">from</code> <code style="color:#ce9178">'react-router-dom'</code><code style="color:#d4d4d4">;
+</code><code style="color:#569cd6">import</code> <code style="color:#d4d4d4">{ useAuth } </code><code style="color:#569cd6">from</code> <code style="color:#ce9178">'./hooks/useAuth'</code><code style="color:#d4d4d4">;
+
+</code><code style="color:#569cd6">function</code> <code style="color:#dcdcaa">RutaProtegida</code><code style="color:#d4d4d4">() {
+  </code><code style="color:#569cd6">const</code> <code style="color:#d4d4d4">{ autenticado, cargando } = useAuth();
+
+  </code><code style="color:#569cd6">if</code> <code style="color:#d4d4d4">(cargando)      </code><code style="color:#569cd6">return</code> <code style="color:#d4d4d4">&lt;p&gt;Verificando sesión...&lt;/p&gt;;
+  </code><code style="color:#569cd6">if</code> <code style="color:#d4d4d4">(!autenticado)  </code><code style="color:#569cd6">return</code> <code style="color:#d4d4d4">&lt;Navigate to=</code><code style="color:#ce9178">"/login"</code> <code style="color:#d4d4d4">replace /&gt;;
+
+  </code><code style="color:#569cd6">return</code> <code style="color:#d4d4d4">&lt;Outlet /&gt;; </code><code style="color:#6a9955">// renderiza la ruta hija si está autenticado</code>
+<code style="color:#d4d4d4">}</code></pre>
+
+      <h2>Checklist de Seguridad en SPAs</h2>
+
+      <table style="width: 100%; border-collapse: collapse; margin: 2rem 0; background: rgba(0,0,0,0.2); border-radius: 8px;">
+        <thead style="background: rgba(139, 92, 246, 0.12); color: #fff;">
+          <tr>
+            <th style="padding: 1rem; text-align: left;">Control</th>
+            <th style="padding: 1rem; text-align: left;">Implementación</th>
+          </tr>
+        </thead>
+        <tbody style="color: #a0a8b5; font-size: 0.93rem;">
+          <tr style="border-bottom: 1px solid rgba(255,255,255,0.05);">
+            <td style="padding: 1rem; color: #d4d4d4;">Prevenir XSS</td>
+            <td style="padding: 1rem;">Usar JSX estándar; sanitizar con DOMPurify si se usa HTML raw</td>
+          </tr>
+          <tr style="border-bottom: 1px solid rgba(255,255,255,0.05);">
+            <td style="padding: 1rem; color: #d4d4d4;">Almacenamiento seguro de tokens</td>
+            <td style="padding: 1rem;">Cookies HttpOnly + Secure + SameSite=Strict</td>
+          </tr>
+          <tr style="border-bottom: 1px solid rgba(255,255,255,0.05);">
+            <td style="padding: 1rem; color: #d4d4d4;">Validación de entradas</td>
+            <td style="padding: 1rem;">Validar en frontend (UX) Y en backend (seguridad real)</td>
+          </tr>
+          <tr style="border-bottom: 1px solid rgba(255,255,255,0.05);">
+            <td style="padding: 1rem; color: #d4d4d4;">No exponer secretos</td>
+            <td style="padding: 1rem;">Solo <code>VITE_</code> para datos públicos; claves privadas solo en backend</td>
+          </tr>
+          <tr style="border-bottom: 1px solid rgba(255,255,255,0.05);">
+            <td style="padding: 1rem; color: #d4d4d4;">Proteger rutas privadas</td>
+            <td style="padding: 1rem;">Componente <code>RutaProtegida</code> con verificación de sesión</td>
+          </tr>
+          <tr style="border-bottom: 1px solid rgba(255,255,255,0.05);">
+            <td style="padding: 1rem; color: #d4d4d4;">Dependencias seguras</td>
+            <td style="padding: 1rem;"><code>npm audit</code> periódico; usar dependabot o Snyk</td>
+          </tr>
+          <tr>
+            <td style="padding: 1rem; color: #d4d4d4;">Content Security Policy</td>
+            <td style="padding: 1rem;">Configurar cabecera CSP en el servidor para restringir scripts</td>
+          </tr>
+        </tbody>
+      </table>
+
+      <p style="background: rgba(139,92,246,0.08); padding: 1.2rem; border-radius: 8px; border-left: 4px solid #8b5cf6;"><strong>Principio fundamental:</strong> El frontend es código público — cualquier usuario puede leerlo. Toda lógica de negocio, autorización real y datos sensibles debe vivir en el backend. React se encarga de la experiencia, el servidor se encarga de la seguridad.</p>
+
+      <div class="page-nav">
+        <a href="/m6-ia-herramientas.html" class="nav-btn">← Herramientas de IA</a>
+        <a href="/index.html" class="nav-btn next" style="background: #8b5cf6;">Concluir Módulo 06 →</a>
+      </div>
+    </article>
+  </main>
+
+  <footer>
+    <p>© 2026 German Mardones. Todos los derechos reservados.</p>
+  </footer>
+
+  <script>
+    function toggleTheme() {
+      const body = document.body;
+      const currentTheme = body.getAttribute('data-theme') || 'dark';
+      const newTheme = currentTheme === 'light' ? 'dark' : 'light';
+      if (newTheme === 'dark') { body.removeAttribute('data-theme'); }
+      else { body.setAttribute('data-theme', 'light'); }
+      localStorage.setItem('theme', newTheme);
+    }
+    const savedTheme = localStorage.getItem('theme');
+    if (savedTheme === 'dark') { document.body.removeAttribute('data-theme'); }
+    else if (savedTheme === 'light') { document.body.setAttribute('data-theme', 'light'); }
+  </script>
+</body>
+</html>

@@ -1,0 +1,195 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>API, JSON, Async/Await y Fetch | Módulo 6 | TI3032</title>
+  <link rel="stylesheet" href="/style.css">
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;800&display=swap" rel="stylesheet">
+  <script async src="https://www.googletagmanager.com/gtag/js?id=G-LZ7J61LLCM"></script>
+  <script>
+    window.dataLayer = window.dataLayer || [];
+    function gtag(){dataLayer.push(arguments);}
+    gtag('js', new Date());
+    gtag('config', 'G-LZ7J61LLCM');
+  </script>
+</head>
+<body>
+  <div class="glass-background"></div>
+  <main class="container content-wrapper">
+    <div class="nav-header">
+      <a href="/index.html" class="back-link">← Volver al Menú Principal</a>
+      <div style="display: flex; gap: 1rem; align-items: center;">
+        <button onclick="toggleTheme()" class="nav-btn" style="padding: 0.3rem 0.8rem; font-size: 1.2rem; background: transparent; border: 1px solid var(--card-border); cursor: pointer; border-radius: 50px; color: var(--text-primary); display: flex; align-items: center; justify-content: center; width: 38px; height: 38px; transition: all 0.3s;" aria-label="Cambiar tema">🌓</button>
+        <span class="badge" style="padding: 0.3rem 1rem; border-radius: 50px; background: rgba(139, 92, 246, 0.15); color: #8b5cf6; font-size: 0.8rem; font-weight: 600; border: 1px solid rgba(139, 92, 246, 0.3); margin-bottom: 0;">MÓDULO 06</span>
+      </div>
+    </div>
+
+    <article class="page-card">
+      <h1>4. API, JSON, Async/Await, Fetch y Axios</h1>
+
+      <p>Las aplicaciones React rara vez trabajan solas — consumen datos de <strong>APIs REST</strong> mediante solicitudes HTTP. Para manejar estas operaciones asíncronas de forma legible, JavaScript provee <code>async/await</code>. Los datos se intercambian en formato <strong>JSON</strong>, y las herramientas más usadas son la API nativa <code>fetch</code> y la librería <strong>Axios</strong>.</p>
+
+      <h2>JSON: El Formato Universal</h2>
+      <p>JSON (<em>JavaScript Object Notation</em>) es el formato estándar para intercambiar datos entre frontend y backend. Es texto estructurado que cualquier lenguaje puede parsear.</p>
+
+<pre><code style="color:#6a9955">// Objeto JavaScript → JSON string</code>
+<code style="color:#569cd6">const</code> <code style="color:#d4d4d4">usuario = { nombre: </code><code style="color:#ce9178">"Ana"</code><code style="color:#d4d4d4">, edad: </code><code style="color:#b5cea8">28</code><code style="color:#d4d4d4">, activo: </code><code style="color:#569cd6">true</code> <code style="color:#d4d4d4">};
+</code><code style="color:#569cd6">const</code> <code style="color:#d4d4d4">json  = JSON.stringify(usuario);
+</code><code style="color:#6a9955">// '{"nombre":"Ana","edad":28,"activo":true}'</code>
+
+<code style="color:#6a9955">// JSON string → Objeto JavaScript</code>
+<code style="color:#569cd6">const</code> <code style="color:#d4d4d4">obj = JSON.parse(json);
+console.log(obj.nombre); </code><code style="color:#6a9955">// "Ana"</code></pre>
+
+      <h2>Async/Await</h2>
+      <p><code>async/await</code> es syntactic sugar sobre las Promises. Permite escribir código asíncrono con la misma estructura lineal del código síncrono, evitando el "callback hell".</p>
+
+      <div class="visual-comparison" style="margin: 2rem 0">
+        <div class="comparison-side sql" style="border-top-color: #ef4444">
+          <p style="color: #ef4444; font-weight: 600; margin-bottom: 0.5rem">Con Promises encadenadas:</p>
+<pre><code style="color:#d4d4d4">fetch(</code><code style="color:#ce9178">'/api/usuarios'</code><code style="color:#d4d4d4">)
+  .then(res =&gt; res.json())
+  .then(data =&gt; console.log(data))
+  .catch(err =&gt; console.error(err));</code></pre>
+        </div>
+        <div class="comparison-side nosql" style="border-top-color: #34d399">
+          <p style="color: #34d399; font-weight: 600; margin-bottom: 0.5rem">Con async/await:</p>
+<pre><code style="color:#569cd6">async function</code> <code style="color:#dcdcaa">obtenerUsuarios</code><code style="color:#d4d4d4">() {
+  </code><code style="color:#569cd6">try</code> <code style="color:#d4d4d4">{
+    </code><code style="color:#569cd6">const</code> <code style="color:#d4d4d4">res  = </code><code style="color:#569cd6">await</code> <code style="color:#d4d4d4">fetch(</code><code style="color:#ce9178">'/api/usuarios'</code><code style="color:#d4d4d4">);
+    </code><code style="color:#569cd6">const</code> <code style="color:#d4d4d4">data = </code><code style="color:#569cd6">await</code> <code style="color:#d4d4d4">res.json();
+    console.log(data);
+  } </code><code style="color:#569cd6">catch</code> <code style="color:#d4d4d4">(err) {
+    console.error(err);
+  }
+}</code></pre>
+        </div>
+      </div>
+
+      <h2>Fetch API en React con useEffect</h2>
+      <p>El patrón estándar para cargar datos al montar un componente combina <code>useEffect</code> con <code>async/await</code>.</p>
+
+<pre><code style="color:#569cd6">import</code> <code style="color:#d4d4d4">{ useState, useEffect } </code><code style="color:#569cd6">from</code> <code style="color:#ce9178">'react'</code><code style="color:#d4d4d4">;
+
+</code><code style="color:#569cd6">function</code> <code style="color:#dcdcaa">ListaUsuarios</code><code style="color:#d4d4d4">() {
+  </code><code style="color:#569cd6">const</code> <code style="color:#d4d4d4">[usuarios,  setUsuarios]  = useState([]);
+  </code><code style="color:#569cd6">const</code> <code style="color:#d4d4d4">[cargando,  setCargando]  = useState(</code><code style="color:#569cd6">true</code><code style="color:#d4d4d4">);
+  </code><code style="color:#569cd6">const</code> <code style="color:#d4d4d4">[error,     setError]     = useState(</code><code style="color:#569cd6">null</code><code style="color:#d4d4d4">);
+
+  useEffect(() =&gt; {
+    </code><code style="color:#569cd6">async function</code> <code style="color:#dcdcaa">cargar</code><code style="color:#d4d4d4">() {
+      </code><code style="color:#569cd6">try</code> <code style="color:#d4d4d4">{
+        </code><code style="color:#569cd6">const</code> <code style="color:#d4d4d4">res  = </code><code style="color:#569cd6">await</code> <code style="color:#d4d4d4">fetch(</code><code style="color:#ce9178">'https://jsonplaceholder.typicode.com/users'</code><code style="color:#d4d4d4">);
+        </code><code style="color:#569cd6">if</code> <code style="color:#d4d4d4">(!res.ok) </code><code style="color:#569cd6">throw new</code> <code style="color:#d4d4d4">Error(</code><code style="color:#ce9178">`HTTP ${res.status}`</code><code style="color:#d4d4d4">);
+        </code><code style="color:#569cd6">const</code> <code style="color:#d4d4d4">data = </code><code style="color:#569cd6">await</code> <code style="color:#d4d4d4">res.json();
+        setUsuarios(data);
+      } </code><code style="color:#569cd6">catch</code> <code style="color:#d4d4d4">(err) {
+        setError(err.message);
+      } </code><code style="color:#569cd6">finally</code> <code style="color:#d4d4d4">{
+        setCargando(</code><code style="color:#569cd6">false</code><code style="color:#d4d4d4">);
+      }
+    }
+    cargar();
+  }, []);  </code><code style="color:#6a9955">// [] = solo al montar</code>
+
+<code style="color:#d4d4d4">  </code><code style="color:#569cd6">if</code> <code style="color:#d4d4d4">(cargando) </code><code style="color:#569cd6">return</code> <code style="color:#d4d4d4">&lt;p&gt;Cargando...&lt;/p&gt;;
+  </code><code style="color:#569cd6">if</code> <code style="color:#d4d4d4">(error)    </code><code style="color:#569cd6">return</code> <code style="color:#d4d4d4">&lt;p&gt;Error: {error}&lt;/p&gt;;
+
+  </code><code style="color:#569cd6">return</code> <code style="color:#d4d4d4">(
+    &lt;ul&gt;
+      {usuarios.map(u =&gt; &lt;li key={u.id}&gt;{u.name} — {u.email}&lt;/li&gt;)}
+    &lt;/ul&gt;
+  );
+}</code></pre>
+
+      <h2>Axios: Alternativa más Robusta</h2>
+      <p>Axios es una librería HTTP que simplifica las peticiones, maneja automáticamente la serialización JSON y tiene mejor gestión de errores que el <code>fetch</code> nativo.</p>
+
+<pre><code style="color:#6a9955"># Instalación</code>
+<code style="color:#d4d4d4">npm install axios</code></pre>
+
+<pre><code style="color:#569cd6">import</code> <code style="color:#d4d4d4">axios </code><code style="color:#569cd6">from</code> <code style="color:#ce9178">'axios'</code><code style="color:#d4d4d4">;
+</code><code style="color:#569cd6">import</code> <code style="color:#d4d4d4">{ useState, useEffect } </code><code style="color:#569cd6">from</code> <code style="color:#ce9178">'react'</code><code style="color:#d4d4d4">;
+
+</code><code style="color:#6a9955">// Instancia reutilizable con configuración base</code>
+<code style="color:#569cd6">const</code> <code style="color:#d4d4d4">api = axios.create({
+  baseURL: </code><code style="color:#ce9178">'https://mi-backend.com/api'</code><code style="color:#d4d4d4">,
+  timeout: </code><code style="color:#b5cea8">5000</code><code style="color:#d4d4d4">,
+  headers: { </code><code style="color:#ce9178">'Authorization'</code><code style="color:#d4d4d4">: </code><code style="color:#ce9178">`Bearer ${localStorage.getItem('token')}`</code> <code style="color:#d4d4d4">}
+});
+
+</code><code style="color:#6a9955">// GET con Axios</code>
+<code style="color:#569cd6">async function</code> <code style="color:#dcdcaa">obtenerProductos</code><code style="color:#d4d4d4">() {
+  </code><code style="color:#569cd6">const</code> <code style="color:#d4d4d4">{ data } = </code><code style="color:#569cd6">await</code> <code style="color:#d4d4d4">api.get(</code><code style="color:#ce9178">'/productos'</code><code style="color:#d4d4d4">);
+  </code><code style="color:#569cd6">return</code> <code style="color:#d4d4d4">data;
+}
+
+</code><code style="color:#6a9955">// POST con Axios</code>
+<code style="color:#569cd6">async function</code> <code style="color:#dcdcaa">crearProducto</code><code style="color:#d4d4d4">(producto) {
+  </code><code style="color:#569cd6">const</code> <code style="color:#d4d4d4">{ data } = </code><code style="color:#569cd6">await</code> <code style="color:#d4d4d4">api.post(</code><code style="color:#ce9178">'/productos'</code><code style="color:#d4d4d4">, producto);
+  </code><code style="color:#569cd6">return</code> <code style="color:#d4d4d4">data;
+}</code></pre>
+
+      <h2>Fetch vs. Axios</h2>
+
+      <table style="width: 100%; border-collapse: collapse; margin: 2rem 0; background: rgba(0,0,0,0.2); border-radius: 8px;">
+        <thead style="background: rgba(139, 92, 246, 0.12); color: #fff;">
+          <tr>
+            <th style="padding: 1rem; text-align: left;">Característica</th>
+            <th style="padding: 1rem; text-align: center;">fetch</th>
+            <th style="padding: 1rem; text-align: center;">Axios</th>
+          </tr>
+        </thead>
+        <tbody style="color: #a0a8b5; font-size: 0.93rem; text-align: center;">
+          <tr style="border-bottom: 1px solid rgba(255,255,255,0.05);">
+            <td style="padding: 1rem; color: #d4d4d4; text-align: left;">Instalación requerida</td>
+            <td style="padding: 1rem;">No (nativo)</td>
+            <td style="padding: 1rem;">Sí (<code>npm install axios</code>)</td>
+          </tr>
+          <tr style="border-bottom: 1px solid rgba(255,255,255,0.05);">
+            <td style="padding: 1rem; color: #d4d4d4; text-align: left;">Parseo automático de JSON</td>
+            <td style="padding: 1rem;">No (requiere <code>.json()</code>)</td>
+            <td style="padding: 1rem;">Sí</td>
+          </tr>
+          <tr style="border-bottom: 1px solid rgba(255,255,255,0.05);">
+            <td style="padding: 1rem; color: #d4d4d4; text-align: left;">Errores HTTP (4xx, 5xx)</td>
+            <td style="padding: 1rem;">No lanza error automáticamente</td>
+            <td style="padding: 1rem;">Lanza error automáticamente</td>
+          </tr>
+          <tr>
+            <td style="padding: 1rem; color: #d4d4d4; text-align: left;">Interceptores / baseURL</td>
+            <td style="padding: 1rem;">Manual</td>
+            <td style="padding: 1rem;">Integrado</td>
+          </tr>
+        </tbody>
+      </table>
+
+      <p style="background: rgba(139,92,246,0.08); padding: 1.2rem; border-radius: 8px; border-left: 4px solid #8b5cf6;"><strong>Recomendación práctica:</strong> Para proyectos simples, <code>fetch</code> es suficiente. Para aplicaciones con autenticación, múltiples endpoints o necesidad de interceptores, Axios reduce considerablemente el código repetitivo.</p>
+
+      <div class="page-nav">
+        <a href="/m6-local-storage.html" class="nav-btn">← Local Storage</a>
+        <a href="/m6-ia-herramientas.html" class="nav-btn next" style="background: #8b5cf6;">5. Herramientas de IA →</a>
+      </div>
+    </article>
+  </main>
+
+  <footer>
+    <p>© 2026 German Mardones. Todos los derechos reservados.</p>
+  </footer>
+
+  <script>
+    function toggleTheme() {
+      const body = document.body;
+      const currentTheme = body.getAttribute('data-theme') || 'dark';
+      const newTheme = currentTheme === 'light' ? 'dark' : 'light';
+      if (newTheme === 'dark') { body.removeAttribute('data-theme'); }
+      else { body.setAttribute('data-theme', 'light'); }
+      localStorage.setItem('theme', newTheme);
+    }
+    const savedTheme = localStorage.getItem('theme');
+    if (savedTheme === 'dark') { document.body.removeAttribute('data-theme'); }
+    else if (savedTheme === 'light') { document.body.setAttribute('data-theme', 'light'); }
+  </script>
+</body>
+</html>
